@@ -7,7 +7,9 @@ module.exports = {
       primaryKey: true
     },
     author: Sequelize.BIGINT,
+    author_date: Sequelize.DATE,
     committer: Sequelize.BIGINT,
+    committer_date: Sequelize.DATE,
     url: Sequelize.STRING,
     message: Sequelize.STRING,
     comment_count: Sequelize.INTEGER

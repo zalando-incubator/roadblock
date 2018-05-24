@@ -66,11 +66,13 @@ module.exports = {
 
   commitMap: {
     id: 'id',
-    message: 'message',
+    'commit.message': 'message',
     'author.id': 'author',
+    'author.date': 'author_date',
     'committer.id': 'committer',
+    'committer.date': 'committer_date',
     html_url: 'url',
-    comment_count: 'comment_count'
+    'commit.comment_count': 'comment_count'
   },
 
   communityProfileMap: {
