@@ -1,0 +1,65 @@
+{
+  "env": {
+    "node": true,
+    "es6": true,
+    "browser": true
+  },
+  "extends": ["eslint:recommended"],
+  "parserOptions": {
+    "ecmaVersion": "2018"
+  },
+  "rules": {
+    "space-infix-ops": ["error"],
+    "indent": [
+      "error",
+      2,
+      {
+        "CallExpression": { "arguments": 1 },
+        "FunctionDeclaration": { "parameters": 1 },
+        "SwitchCase": 1
+      }
+    ],
+    "linebreak-style": ["error", "unix"],
+    "object-property-newline": ["error"],
+    "no-multi-assign": ["error"],
+    "no-new-object": ["error"],
+    "func-call-spacing": ["error", "never"],
+    "brace-style": ["error", "1tbs"],
+    "object-curly-newline": ["off", { "multiline": true }],
+    "no-implied-eval": ["error"],
+    "operator-linebreak": ["error", "before"],
+    "no-lonely-if": ["error"],
+    "no-multi-str": ["error"],
+    "prefer-const": ["error"],
+    "prefer-template": ["error"],
+    "require-await": ["error"],
+    "spaced-comment": ["error", "always"],
+    "max-len": [
+      "error",
+      {
+        "code": 100,
+        "tabWidth": 2,
+        "ignoreUrls": true
+      }
+    ],
+    "semi": ["error", "always"],
+    "quotes": ["error", "single"],
+    "no-trailing-spaces": ["error"],
+    "no-console": ["off"],
+    "keyword-spacing": [
+      "error",
+      {
+        "before": true,
+        "after": true
+      }
+    ],
+    "space-before-blocks": [
+      "error",
+      {
+        "functions": "always",
+        "keywords": "always"
+      }
+    ],
+    "arrow-body-style": ["error", "always"]
+  }
+}
