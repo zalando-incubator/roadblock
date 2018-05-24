@@ -30,7 +30,7 @@ const config = {
       return `${url}/repos/${org}/${repo}/collaborators`;
     }
   },
-  token: '688e882812c56cb2b8a5d878022c9bb612fb4212'
+  token: null
 };
 
 const setToken = (value) => {
