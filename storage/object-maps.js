@@ -73,6 +73,16 @@ module.exports = {
     comment_count: 'comment_count'
   },
 
+  collaboratorMap: {
+    id: 'id',
+    avatar_url: 'avatar',
+    html_url: 'url',
+    login: 'login',
+    'permissions.push': 'push',
+    'permissions.pull': 'pull',
+    'permissions.admin': 'admin'
+  },
+
   communityProfileMap: {
     id: 'id',
     health_percentage: 'health_percentage',

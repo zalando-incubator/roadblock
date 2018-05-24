@@ -22,9 +22,15 @@ const config = {
     },
     communityProfile: (owner, name) => {
       return `${url}/repos/${owner}/${name}/community/profile`;
+    },
+    externalCollaboratorsForOrg: org => {
+      return `${url}/orgs/${org}/outside_collaborators`;
+    },
+    collaboratorsForRepo: (org, repo) => {
+      return `${url}/repos/${org}/${repo}/collaborators`;
     }
   },
-  token: null
+  token: '688e882812c56cb2b8a5d878022c9bb612fb4212'
 };
 
 const setToken = (value) => {

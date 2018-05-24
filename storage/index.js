@@ -50,6 +50,7 @@ var syncSchema = async function(force) {
   await _models.Member.sync({ force });
   await _models.Commit.sync({ force });
   await _models.CommunityProfile.sync({ force });
+  await _models.Collaborator.sync({ force });
 
   console.log('Schema sync complete.');
 };
@@ -65,6 +66,7 @@ const connect = async function() {
     _models.Repository = sequelize.define('Repository', schema.Repository, _modelCfg);
     _models.PullRequest = sequelize.define('PullRequest', schema.PullRequest, _modelCfg);
     _models.Commit = sequelize.define('Commit', schema.Commit, _modelCfg);
+    _models.Collaborator = sequelize.define('Collaborator', schema.Collaborator, _modelCfg);
     _models.CommunityProfile = sequelize.define(
       'CommunityProfile',
       schema.CommunityProfile,
@@ -76,8 +78,13 @@ const connect = async function() {
     _models.Issue.belongsTo(_models.Repository);
     _models.Commit.belongsTo(_models.Repository);
     _models.CommunityProfile.belongsTo(_models.Repository);
+    _models.Collaborator.belongsTo(_models.Repository);
+
     _models.Member.belongsToMany(_models.Organisation, { through: 'MemberOrganisation' });
     _models.Organisation.belongsToMany(_models.Member, { through: 'MemberOrganisation' });
+
+    _models.Collaborator.belongsToMany(_models.Repository, { through: 'CollaboratorRepository' });
+    _models.Repository.belongsToMany(_models.Collaborator, { through: 'CollaboratorRepository' });
 
     sequelize.sync();
 

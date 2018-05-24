@@ -88,6 +88,22 @@ function getTechRadarData() {
   return null;
 }
 
+async function getExternalCollaboratorsForOrg(org) {
+  try {
+    return await requestorTemplate.getAll(api.externalCollaboratorsForOrg(org));
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function getCollaboratorsForRepo(org, repo) {
+  try {
+    return await requestorTemplate.getAll(api.collaboratorsForRepo(org, repo));
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
 function logger({ log = null } = {}) {
   const result = {};
   result.log = log
@@ -109,5 +125,7 @@ module.exports = {
   getOrgs,
   getOrgDetails,
   getCommunityProfile,
-  getTechRadarData
+  getTechRadarData,
+  getExternalCollaboratorsForOrg,
+  getCollaboratorsForRepo
 };

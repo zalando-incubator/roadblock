@@ -104,5 +104,18 @@ module.exports = {
     pull_request_template: Sequelize.BOOLEAN,
     readme: Sequelize.BOOLEAN,
     license: Sequelize.STRING
+  },
+
+  Collaborator: {
+    id: {
+      type: Sequelize.BIGINT,
+      primaryKey: true
+    },
+    avatar: Sequelize.STRING(400),
+    login: Sequelize.STRING(100),
+    url: Sequelize.STRING,
+    pull: Sequelize.BOOLEAN,
+    push: Sequelize.BOOLEAN,
+    admin: Sequelize.BOOLEAN
   }
 };
