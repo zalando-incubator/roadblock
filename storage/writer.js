@@ -14,7 +14,8 @@ function init(schema) {
     writeRepositories,
     writePullRequests,
     writeCommits,
-    writeCommunityProfile
+    writeCommunityProfile,
+    writeExternalContributions
   };
 }
 
@@ -125,6 +126,25 @@ async function writeIssues(issues) {
 
   try {
     return await _models.Issue.bulkCreate(dbIssues);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function writeExternalContributions(contributors, members) {
+  const filteredArray  = contributors.filter(contributor => {
+    return members.filter(member => {
+      return member.login === contributor.author.login;
+    }).length === 0;
+  });
+  console.log('filteredArray', filteredArray);
+  const dbExternalContributions = arrayMapper('externalContribution', contributors);
+  console.log('contrib', dbExternalContributions[0]);
+
+  try {
+    const c = await _models.ExternalContribution.bulkCreate(dbExternalContributions);
+    console.log('created', c);
+    return c;
   } catch (e) {
     return new Error(e);
   }

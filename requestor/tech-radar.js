@@ -6,7 +6,7 @@ const repos = [
   {
     name: 'node',
     org: 'nodejs'
-  },
+  } /* ,
   {
     name: 'OpenAPI-Specification',
     org: 'OAI'
@@ -66,7 +66,7 @@ const repos = [
   {
     name: 'redis',
     org: 'antirez'
-  }
+  } */
 ];
 
 module.exports = repos;

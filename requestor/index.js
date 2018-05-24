@@ -1,5 +1,4 @@
 const ghrequestor = require('ghrequestor');
-const techRadarProjects = require('./tech-radar');
 const { token, api } = require('./config').config;
 const headers = { authorization: `token ${token}` };
 const previewHeaders = {
@@ -83,11 +82,6 @@ async function getCommunityProfile(org, repo) {
   }
 }
 
-function getTechRadarData() {
-  console.log('techRadarProjects', techRadarProjects);
-  return null;
-}
-
 async function getExternalCollaboratorsForOrg(org) {
   try {
     return await requestorTemplate.getAll(api.externalCollaboratorsForOrg(org));
@@ -99,6 +93,14 @@ async function getExternalCollaboratorsForOrg(org) {
 async function getCollaboratorsForRepo(org, repo) {
   try {
     return await requestorTemplate.getAll(api.collaboratorsForRepo(org, repo));
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function getExternalContributions(org, repo) {
+  try {
+    return await requestorTemplate.getAll(api.contributorsForRepo(org, repo));
   } catch (e) {
     return new Error(e);
   }
@@ -125,7 +127,7 @@ module.exports = {
   getOrgs,
   getOrgDetails,
   getCommunityProfile,
-  getTechRadarData,
   getExternalCollaboratorsForOrg,
-  getCollaboratorsForRepo
+  getCollaboratorsForRepo,
+  getExternalContributions
 };

@@ -83,6 +83,12 @@ module.exports = {
     'permissions.admin': 'admin'
   },
 
+  externalContributionMap: {
+    id: 'id',
+    total: 'total',
+    'author.id': 'member_id'
+  },
+
   communityProfileMap: {
     id: 'id',
     health_percentage: 'health_percentage',
