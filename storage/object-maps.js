@@ -93,7 +93,8 @@ module.exports = {
     id: 'id',
     total: 'total',
     'author.id': 'member_id',
-    'author.login': 'login'
+    'author.login': 'login',
+    'author.html_url': 'url'
   },
 
   communityProfileMap: {
