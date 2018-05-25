@@ -11,6 +11,7 @@ const { performance } = require('perf_hooks');
 const store = require('./storage');
 const ghClient = require('./requestor');
 const writer = require('./storage/writer');
+const techRadarProjects = require('./requestor/tech-radar');
 const timer = {
   totalTime: performance.now()
 };
@@ -35,7 +36,7 @@ function initToken() {
 }
 
 async function initDb() {
-  const db = await store.connect();
+  const { _models: db, sequelize } = await store.connect();
   const bulkWriter = await writer.init(db);
 
   // Syncs the schema changes to the db
@@ -44,6 +45,7 @@ async function initDb() {
 
   return {
     db,
+    sequelize,
     bulkWriter
   };
 }
@@ -64,7 +66,7 @@ async function save(type, bulkWriter, org, param) {
         ? await bulkWriter(data, param)
         : await bulkWriter(data, param && param.id);
 
-    setTimer(type, time, org);
+    // setTimer(type, time, org);
     return savedData;
   } catch (e) {
     return new Error(e);
@@ -80,6 +82,7 @@ async function renderDbData(db) {
     'Repository',
     'Commit',
     'CommunityProfile',
+    'ExternalContribution',
     'Collaborator',
     'Contribution'
   ];
@@ -119,11 +122,24 @@ function renderTimer(param) {
   }
 }
 
+async function getExternalData(bulkWriter) {
+  for (const project of techRadarProjects) {
+    await save(
+      'ExternalContributions',
+      bulkWriter.writeExternalContributions,
+      project.org,
+      project
+    );
+  }
+}
+
 async function getData() {
   renderWelcomeMessage();
 
   try {
-    const { db, bulkWriter } = await initDb();
+    const { db, sequelize, bulkWriter } = await initDb();
+
+    await getExternalData(bulkWriter);
     const organisations = await ghClient.getOrgs();
 
     // Fetch all organisations which the active token have access to
@@ -202,10 +218,9 @@ async function getData() {
       timer[org['login']].totalTime = performance.now() - totalTime;
     }
 
-    // Log how much time it to took to fetch data for all organisations the token can access
+    await bulkWriter.deleteExternalContributions(sequelize);
     timer.totalTime = performance.now() - timer.totalTime;
 
-    // Write out statistics on all fetched data
     await renderDbData(db);
     renderTimer();
   } catch (e) {

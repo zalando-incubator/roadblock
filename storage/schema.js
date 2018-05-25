@@ -52,7 +52,11 @@ module.exports = {
     following: Sequelize.INTEGER,
     collaborators: Sequelize.INTEGER,
     public_repositories: Sequelize.INTEGER,
-    private_repositories: Sequelize.INTEGER
+    private_repositories: Sequelize.INTEGER,
+    type: {
+      type: Sequelize.STRING,
+      defaultValue: 'internal'
+    }
   },
 
   Repository: {
@@ -69,7 +73,11 @@ module.exports = {
     stars: Sequelize.INTEGER,
     forks: Sequelize.INTEGER,
     open_issues: Sequelize.INTEGER,
-    watchers: Sequelize.INTEGER
+    watchers: Sequelize.INTEGER,
+    type: {
+      type: Sequelize.STRING,
+      defaultValue: 'internal'
+    }
   },
 
   PullRequest: {
@@ -120,5 +128,14 @@ module.exports = {
     user_id: Sequelize.BIGINT,
     total: Sequelize.BIGINT,
     login: Sequelize.STRING(100)
+  },
+
+  ExternalContribution: {
+    id: {
+      type: Sequelize.BIGINT,
+      primaryKey: true
+    },
+    total: Sequelize.INTEGER,
+    member_id: Sequelize.BIGINT
   }
 };

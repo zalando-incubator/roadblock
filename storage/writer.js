@@ -16,7 +16,9 @@ function init(schema) {
     writeCommits,
     writeCommunityProfile,
     writeCollaborators,
-    writeContributions
+    writeContributions,
+    writeExternalContributions,
+    deleteExternalContributions
   };
 }
 
@@ -159,6 +161,35 @@ async function writeIssues(issues) {
 
   try {
     return await _models.Issue.bulkCreate(dbIssues);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function writeExternalContributions(contributors) {
+  const dbExternalContributions = arrayMapper(
+    'externalContribution',
+    contributors
+  );
+
+  try {
+    return await _models.ExternalContribution.bulkCreate(
+      dbExternalContributions
+    );
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function deleteExternalContributions(sequelize) {
+  try {
+    return await sequelize.query(`
+      DELETE FROM ExternalContribution
+      WHERE member_id NOT IN (
+        SELECT id
+        FROM Member
+      )
+    `);
   } catch (e) {
     return new Error(e);
   }

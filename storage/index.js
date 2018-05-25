@@ -52,6 +52,7 @@ var syncSchema = async function(force) {
   await _models.CommunityProfile.sync({ force });
   await _models.Collaborator.sync({ force });
   await _models.Contribution.sync({ force });
+  await _models.ExternalContribution.sync({ force });
 
   console.log('Schema sync complete.');
 };
@@ -91,6 +92,11 @@ const connect = async function() {
       _modelCfg
     );
 
+    _models.ExternalContribution = sequelize.define(
+      'ExternalContribution',
+      schema.ExternalContribution,
+      _modelCfg
+    );
     _models.CommunityProfile = sequelize.define(
       'CommunityProfile',
       schema.CommunityProfile,
@@ -115,7 +121,10 @@ const connect = async function() {
 
     sequelize.sync();
 
-    return _models;
+    return {
+      _models,
+      sequelize
+    };
   } catch (e) {
     console.error(e);
   }
