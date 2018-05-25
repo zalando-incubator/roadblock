@@ -26,14 +26,17 @@ const config = {
     externalCollaboratorsForOrg: org => {
       return `${url}/orgs/${org}/outside_collaborators`;
     },
-    collaboratorsForRepo: (org, repo) => {
+    collaborators: (org, repo) => {
       return `${url}/repos/${org}/${repo}/collaborators`;
+    },
+    contributions: (org, repo) => {
+      return `${url}/repos/${org}/${repo}/stats/contributors`;
     }
   },
   token: null
 };
 
-const setToken = (value) => {
+const setToken = value => {
   config.token = value;
 };
 

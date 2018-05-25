@@ -59,9 +59,10 @@ async function save(type, bulkWriter, org, param) {
   try {
     const time = performance.now();
     const data = await ghClient[`get${type}`](org, param && param.name);
-    const savedData = type === 'Members'
-      ? await bulkWriter(data, param)
-      : await bulkWriter(data, param && param.id);
+    const savedData =
+      type === 'Members'
+        ? await bulkWriter(data, param)
+        : await bulkWriter(data, param && param.id);
 
     setTimer(type, time, org);
     return savedData;
@@ -71,16 +72,26 @@ async function save(type, bulkWriter, org, param) {
 }
 
 async function renderDbData(db) {
-  const data = ['Organisation', 'Issue', 'Member', 'PullRequest', 'Repository',
-    'Commit', 'CommunityProfile'
+  const data = [
+    'Organisation',
+    'Issue',
+    'Member',
+    'PullRequest',
+    'Repository',
+    'Commit',
+    'CommunityProfile',
+    'Collaborator',
+    'Contribution'
   ];
 
   console.log('**Count**');
   console.log('---');
 
-  await Promise.all(data.map(async (value) => {
-    console.log(`${value}: ${await db[value].count()}`);
-  }));
+  await Promise.all(
+    data.map(async value => {
+      console.log(`${value}: ${await db[value].count()}`);
+    })
+  );
 }
 
 function renderTimer(param) {
@@ -115,14 +126,24 @@ async function getData() {
     const { db, bulkWriter } = await initDb();
     const organisations = await ghClient.getOrgs();
 
+    // Fetch all organisations which the active token have access to
     for (const org of organisations) {
       timer[org['login']] = {
         totalTime: performance.now(),
         tasks: []
       };
 
-      const storedOrg = await save('OrgDetails', bulkWriter.writeSingleOrganisation, org.login);
+      // Fetch details on the organisation to get forks, stars, etc
+      const storedOrg = await save(
+        'OrgDetails',
+        bulkWriter.writeSingleOrganisation,
+        org.login
+      );
+
+      // Fetch all repositories in the current org
       let repos = await save('Repos', bulkWriter.writeRepositories, org.login);
+
+      // Store the repositories names for future queries and discard the rest
       const trimmedRepos = repos.map(x => {
         return {
           id: x.id,
@@ -131,20 +152,60 @@ async function getData() {
       });
       repos = null;
 
+      // Fetch all members in the current organisation
       await save('Members', bulkWriter.writeMembers, org.login, storedOrg);
+
+      // For each repo, fetch all repository specific data like profiles, prs, commits and collaborators
       for (const repo of trimmedRepos) {
-        await save('CommunityProfile', bulkWriter.writeCommunityProfile, org.login, repo);
-        await save('PullRequests', bulkWriter.writePullRequests, org.login, repo);
+        // Fetch community statistics on presence of COC, readme, templates and license file
+        // Save them in the CommunityProfile table
+        await save(
+          'CommunityProfile',
+          bulkWriter.writeCommunityProfile,
+          org.login,
+          repo
+        );
+
+        // Fetch all pull requests for the repository and save them in the PullRequest table
+        await save(
+          'PullRequests',
+          bulkWriter.writePullRequests,
+          org.login,
+          repo
+        );
+
+        // Fetch all commits for the repository
         await save('Commits', bulkWriter.writeCommits, org.login, repo);
+
+        // Get all collaborators for each repository
+        await save(
+          'Collaborators',
+          bulkWriter.writeCollaborators,
+          org.login,
+          repo
+        );
+
+        // Get all contributions for the repository
+        await save(
+          'Contributions',
+          bulkWriter.writeContributions,
+          org.login,
+          repo
+        );
       }
+
+      // Fetch all issues for the entire organisation
       await save('Issues', bulkWriter.writeIssues, org.login);
 
+      // Log how much time it took to fetch all data for a organisation
       const totalTime = timer[org['login']].totalTime;
       timer[org['login']].totalTime = performance.now() - totalTime;
     }
 
+    // Log how much time it to took to fetch data for all organisations the token can access
     timer.totalTime = performance.now() - timer.totalTime;
 
+    // Write out statistics on all fetched data
     await renderDbData(db);
     renderTimer();
   } catch (e) {

@@ -74,13 +74,19 @@ module.exports = {
   },
 
   collaboratorMap: {
-    id: 'id',
+    id: 'user_id',
     avatar_url: 'avatar',
     html_url: 'url',
     login: 'login',
     'permissions.push': 'push',
     'permissions.pull': 'pull',
     'permissions.admin': 'admin'
+  },
+
+  contributionMap: {
+    'author.id': 'user_id',
+    total: 'total',
+    'author.login': 'login'
   },
 
   communityProfileMap: {

@@ -14,7 +14,9 @@ function init(schema) {
     writeRepositories,
     writePullRequests,
     writeCommits,
-    writeCommunityProfile
+    writeCommunityProfile,
+    writeCollaborators,
+    writeContributions
   };
 }
 
@@ -64,6 +66,38 @@ async function writeCommits(commits, repoId) {
   }
 }
 
+async function writeCollaborators(collaborators, repoId) {
+  const dbCollaborators = arrayMapper('collaborator', collaborators);
+  const dbCollaboratorsWithRepo = dbCollaborators.map(x => {
+    return {
+      ...x,
+      repository_id: repoId
+    };
+  });
+
+  try {
+    return await _models.Collaborator.bulkCreate(dbCollaboratorsWithRepo);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function writeContributions(contributions, repoId) {
+  const dbContributions = arrayMapper('contribution', contributions);
+  const dbContributionsWithRepo = dbContributions.map(x => {
+    return {
+      ...x,
+      repository_id: repoId
+    };
+  });
+
+  try {
+    return await _models.Contribution.bulkCreate(dbContributionsWithRepo);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
 async function writePullRequests(prs) {
   const dbPrs = arrayMapper('pullRequest', prs);
 
@@ -100,7 +134,7 @@ async function writeSingleOrganisation(organisation) {
   try {
     return await _models.Organisation.create(dbOrg);
   } catch (e) {
-    return new Error(e);
+    throw new Error(e);
   }
 }
 
@@ -110,13 +144,13 @@ async function writeMembers(members, organisation) {
   try {
     for (const member of dbMembers) {
       await _models.Member.findOrCreate({ where: member }).spread(
-        (createdMember) => {
+        createdMember => {
           return organisation.addMember(createdMember);
         }
       );
     }
   } catch (e) {
-    return new Error(e);
+    return new Error('Could not store members', e);
   }
 }
 

@@ -76,7 +76,9 @@ async function getMembers(org) {
 
 async function getCommunityProfile(org, repo) {
   try {
-    const response = await requestorTemplatePreview.get(api.communityProfile(org, repo));
+    const response = await requestorTemplatePreview.get(
+      api.communityProfile(org, repo)
+    );
     return response.body;
   } catch (e) {
     return new Error(e);
@@ -96,9 +98,17 @@ async function getExternalCollaboratorsForOrg(org) {
   }
 }
 
-async function getCollaboratorsForRepo(org, repo) {
+async function getCollaborators(org, repo) {
   try {
-    return await requestorTemplate.getAll(api.collaboratorsForRepo(org, repo));
+    return await requestorTemplate.getAll(api.collaborators(org, repo));
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function getContributions(org, repo) {
+  try {
+    return await requestorTemplate.getAll(api.contributions(org, repo));
   } catch (e) {
     return new Error(e);
   }
@@ -106,8 +116,9 @@ async function getCollaboratorsForRepo(org, repo) {
 
 function logger({ log = null } = {}) {
   const result = {};
-  result.log = log
-    || ((level, message, data) => {
+  result.log =
+    log ||
+    ((level, message, data) => {
       if (data.target) {
         console.log(`     ⬇️      Downloading ${data.target}`);
       }
@@ -127,5 +138,6 @@ module.exports = {
   getCommunityProfile,
   getTechRadarData,
   getExternalCollaboratorsForOrg,
-  getCollaboratorsForRepo
+  getCollaborators,
+  getContributions
 };

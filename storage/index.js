@@ -51,6 +51,7 @@ var syncSchema = async function(force) {
   await _models.Commit.sync({ force });
   await _models.CommunityProfile.sync({ force });
   await _models.Collaborator.sync({ force });
+  await _models.Contribution.sync({ force });
 
   console.log('Schema sync complete.');
 };
@@ -60,13 +61,36 @@ const connect = async function() {
     await sequelize.authenticate();
     console.log('Connection has been established successfully.');
 
-    _models.Organisation = sequelize.define('Organisation', schema.Organisation, _modelCfg);
+    _models.Organisation = sequelize.define(
+      'Organisation',
+      schema.Organisation,
+      _modelCfg
+    );
     _models.Issue = sequelize.define('Issue', schema.Issue, _modelCfg);
     _models.Member = sequelize.define('Member', schema.Member, _modelCfg);
-    _models.Repository = sequelize.define('Repository', schema.Repository, _modelCfg);
-    _models.PullRequest = sequelize.define('PullRequest', schema.PullRequest, _modelCfg);
+    _models.Repository = sequelize.define(
+      'Repository',
+      schema.Repository,
+      _modelCfg
+    );
+    _models.PullRequest = sequelize.define(
+      'PullRequest',
+      schema.PullRequest,
+      _modelCfg
+    );
     _models.Commit = sequelize.define('Commit', schema.Commit, _modelCfg);
-    _models.Collaborator = sequelize.define('Collaborator', schema.Collaborator, _modelCfg);
+    _models.Collaborator = sequelize.define(
+      'Collaborator',
+      schema.Collaborator,
+      _modelCfg
+    );
+
+    _models.Contribution = sequelize.define(
+      'Contribution',
+      schema.Contribution,
+      _modelCfg
+    );
+
     _models.CommunityProfile = sequelize.define(
       'CommunityProfile',
       schema.CommunityProfile,
@@ -74,17 +98,20 @@ const connect = async function() {
     );
 
     _models.Repository.belongsTo(_models.Organisation);
+
     _models.PullRequest.belongsTo(_models.Repository);
+    _models.Collaborator.belongsTo(_models.Repository);
+    _models.Contribution.belongsTo(_models.Repository);
     _models.Issue.belongsTo(_models.Repository);
     _models.Commit.belongsTo(_models.Repository);
     _models.CommunityProfile.belongsTo(_models.Repository);
-    _models.Collaborator.belongsTo(_models.Repository);
 
-    _models.Member.belongsToMany(_models.Organisation, { through: 'MemberOrganisation' });
-    _models.Organisation.belongsToMany(_models.Member, { through: 'MemberOrganisation' });
-
-    _models.Collaborator.belongsToMany(_models.Repository, { through: 'CollaboratorRepository' });
-    _models.Repository.belongsToMany(_models.Collaborator, { through: 'CollaboratorRepository' });
+    _models.Member.belongsToMany(_models.Organisation, {
+      through: 'MemberOrganisation'
+    });
+    _models.Organisation.belongsToMany(_models.Member, {
+      through: 'MemberOrganisation'
+    });
 
     sequelize.sync();
 

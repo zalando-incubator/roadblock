@@ -107,15 +107,18 @@ module.exports = {
   },
 
   Collaborator: {
-    id: {
-      type: Sequelize.BIGINT,
-      primaryKey: true
-    },
+    user_id: Sequelize.BIGINT,
     avatar: Sequelize.STRING(400),
     login: Sequelize.STRING(100),
     url: Sequelize.STRING,
     pull: Sequelize.BOOLEAN,
     push: Sequelize.BOOLEAN,
     admin: Sequelize.BOOLEAN
+  },
+
+  Contribution: {
+    user_id: Sequelize.BIGINT,
+    total: Sequelize.BIGINT,
+    login: Sequelize.STRING(100)
   }
 };
