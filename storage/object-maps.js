@@ -92,7 +92,8 @@ module.exports = {
   externalContributionMap: {
     id: 'id',
     total: 'total',
-    'author.id': 'member_id'
+    'author.id': 'member_id',
+    'author.login': 'login'
   },
 
   communityProfileMap: {

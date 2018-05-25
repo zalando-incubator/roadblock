@@ -51,22 +51,28 @@ async function initDb() {
 }
 
 function setTimer(label, time, org) {
-  timer[org].tasks[label] = performance.now() - time;
+  const orgTimer = timer[org];
+
+  if (orgTimer) {
+    timer[org].tasks[label] = performance.now() - time;
+  } else {
+    timer['external contributions'] = performance.now() - time;
+  }
 }
 
 async function save(type, bulkWriter, org, param) {
   // if type = Members, param = storedOrg
   // all other types, param = repo or null
+  // if type = ExternalContributions, param.id = null
 
   try {
     const time = performance.now();
     const data = await ghClient[`get${type}`](org, param && param.name);
-    const savedData =
-      type === 'Members'
-        ? await bulkWriter(data, param)
-        : await bulkWriter(data, param && param.id);
+    const savedData = type === 'Members'
+      ? await bulkWriter(data, param)
+      : await bulkWriter(data, param && (param.id || param.name));
 
-    // setTimer(type, time, org);
+    setTimer(type, time, org);
     return savedData;
   } catch (e) {
     return new Error(e);
@@ -123,13 +129,17 @@ function renderTimer(param) {
 }
 
 async function getExternalData(bulkWriter) {
-  for (const project of techRadarProjects) {
-    await save(
-      'ExternalContributions',
-      bulkWriter.writeExternalContributions,
-      project.org,
-      project
-    );
+  try {
+    for (const project of techRadarProjects) {
+      await save(
+        'ExternalContributions',
+        bulkWriter.writeExternalContributions,
+        project.org,
+        project
+      );
+    }
+  } catch (e) {
+    return new Error(e);
   }
 }
 
@@ -142,7 +152,7 @@ async function getData() {
     await getExternalData(bulkWriter);
     const organisations = await ghClient.getOrgs();
 
-    // Fetch all organisations which the active token have access to
+    // Fetch all organisations which the active token has access to
     for (const org of organisations) {
       timer[org['login']] = {
         totalTime: performance.now(),
@@ -156,10 +166,21 @@ async function getData() {
         org.login
       );
 
-      // Fetch all repositories in the current org
-      let repos = await save('Repos', bulkWriter.writeRepositories, org.login);
+      // Fetch all members in the current organisation
+      await save('Members',
+        bulkWriter.writeMembers,
+        org.login,
+        storedOrg
+      );
 
-      // Store the repositories names for future queries and discard the rest
+      // Fetch all repositories in the current org
+      let repos = await save(
+        'Repos',
+        bulkWriter.writeRepositories,
+        org.login
+      );
+
+      // Store the repository name, id for future queries and discard the rest
       const trimmedRepos = repos.map(x => {
         return {
           id: x.id,
@@ -168,13 +189,9 @@ async function getData() {
       });
       repos = null;
 
-      // Fetch all members in the current organisation
-      await save('Members', bulkWriter.writeMembers, org.login, storedOrg);
-
       // For each repo, fetch all repository specific data like profiles, prs, commits and collaborators
       for (const repo of trimmedRepos) {
         // Fetch community statistics on presence of COC, readme, templates and license file
-        // Save them in the CommunityProfile table
         await save(
           'CommunityProfile',
           bulkWriter.writeCommunityProfile,
@@ -191,7 +208,12 @@ async function getData() {
         );
 
         // Fetch all commits for the repository
-        await save('Commits', bulkWriter.writeCommits, org.login, repo);
+        await save(
+          'Commits',
+          bulkWriter.writeCommits,
+          org.login,
+          repo
+        );
 
         // Get all collaborators for each repository
         await save(
@@ -211,14 +233,20 @@ async function getData() {
       }
 
       // Fetch all issues for the entire organisation
-      await save('Issues', bulkWriter.writeIssues, org.login);
+      await save(
+        'Issues',
+        bulkWriter.writeIssues,
+        org.login
+      );
 
       // Log how much time it took to fetch all data for a organisation
       const totalTime = timer[org['login']].totalTime;
       timer[org['login']].totalTime = performance.now() - totalTime;
     }
 
+    // Clean-up ExternalContributions table to have only contributions from org members 
     await bulkWriter.deleteExternalContributions(sequelize);
+
     timer.totalTime = performance.now() - timer.totalTime;
 
     await renderDbData(db);

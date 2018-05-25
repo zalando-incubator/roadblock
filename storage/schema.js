@@ -135,7 +135,9 @@ module.exports = {
       type: Sequelize.BIGINT,
       primaryKey: true
     },
+    login: Sequelize.STRING,
     total: Sequelize.INTEGER,
-    member_id: Sequelize.BIGINT
+    member_id: Sequelize.BIGINT,
+    repository_name: Sequelize.STRING
   }
 };

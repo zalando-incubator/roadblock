@@ -166,16 +166,17 @@ async function writeIssues(issues) {
   }
 }
 
-async function writeExternalContributions(contributors) {
-  const dbExternalContributions = arrayMapper(
-    'externalContribution',
-    contributors
-  );
+async function writeExternalContributions(contributors, repo) {
+  const dbContributors = arrayMapper('externalContribution', contributors);
+  const dbContributorsWithRepo = dbContributors.map(contributor => {
+    return {
+      ...contributor,
+      repository_id: repo
+    };
+  });
 
   try {
-    return await _models.ExternalContribution.bulkCreate(
-      dbExternalContributions
-    );
+    return await _models.ExternalContribution.bulkCreate(dbContributorsWithRepo);
   } catch (e) {
     return new Error(e);
   }
@@ -185,7 +186,7 @@ async function deleteExternalContributions(sequelize) {
   try {
     return await sequelize.query(`
       DELETE FROM ExternalContribution
-      WHERE member_id NOT IN (
+      WHERE member_id IS NULL OR member_id NOT IN (
         SELECT id
         FROM Member
       )
