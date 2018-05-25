@@ -189,7 +189,8 @@ async function getData() {
       });
       repos = null;
 
-      // For each repo, fetch all repository specific data like profiles, prs, commits and collaborators
+      // For each repo, fetch all repository specific data like -
+      // profiles, prs, commits and collaborators
       for (const repo of trimmedRepos) {
         // Fetch community statistics on presence of COC, readme, templates and license file
         await save(
@@ -244,7 +245,7 @@ async function getData() {
       timer[org['login']].totalTime = performance.now() - totalTime;
     }
 
-    // Clean-up ExternalContributions table to have only contributions from org members 
+    // Clean-up ExternalContributions table to have only contributions from org members
     await bulkWriter.deleteExternalContributions(sequelize);
 
     timer.totalTime = performance.now() - timer.totalTime;

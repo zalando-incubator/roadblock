@@ -136,7 +136,7 @@ async function writeSingleOrganisation(organisation) {
   try {
     return await _models.Organisation.create(dbOrg);
   } catch (e) {
-    throw new Error(e);
+    return new Error(e);
   }
 }
 
@@ -152,7 +152,7 @@ async function writeMembers(members, organisation) {
       );
     }
   } catch (e) {
-    return new Error('Could not store members', e);
+    return new Error(e);
   }
 }
 
