@@ -67,8 +67,16 @@ const connect = async function() {
       schema.Organisation,
       _modelCfg
     );
-    _models.Issue = sequelize.define('Issue', schema.Issue, _modelCfg);
-    _models.Member = sequelize.define('Member', schema.Member, _modelCfg);
+    _models.Issue = sequelize.define(
+      'Issue',
+      schema.Issue,
+      _modelCfg
+    );
+    _models.Member = sequelize.define(
+      'Member',
+      schema.Member,
+      _modelCfg
+    );
     _models.Repository = sequelize.define(
       'Repository',
       schema.Repository,
@@ -79,19 +87,21 @@ const connect = async function() {
       schema.PullRequest,
       _modelCfg
     );
-    _models.Commit = sequelize.define('Commit', schema.Commit, _modelCfg);
+    _models.Commit = sequelize.define(
+      'Commit',
+      schema.Commit,
+      _modelCfg
+    );
     _models.Collaborator = sequelize.define(
       'Collaborator',
       schema.Collaborator,
       _modelCfg
     );
-
     _models.Contribution = sequelize.define(
       'Contribution',
       schema.Contribution,
       _modelCfg
     );
-
     _models.ExternalContribution = sequelize.define(
       'ExternalContribution',
       schema.ExternalContribution,
