@@ -11,6 +11,7 @@ const { performance } = require('perf_hooks');
 const store = require('./storage');
 const ghClient = require('./requestor');
 const writer = require('./storage/writer');
+const techRadarProjects = require('./requestor/tech-radar');
 const timer = {
   totalTime: performance.now()
 };
@@ -35,7 +36,7 @@ function initToken() {
 }
 
 async function initDb() {
-  const db = await store.connect();
+  const { _models: db, sequelize } = await store.connect();
   const bulkWriter = await writer.init(db);
 
   // Syncs the schema changes to the db
@@ -44,6 +45,7 @@ async function initDb() {
 
   return {
     db,
+    sequelize,
     bulkWriter
   };
 }
@@ -63,7 +65,7 @@ async function save(type, bulkWriter, org, param) {
       ? await bulkWriter(data, param)
       : await bulkWriter(data, param && param.id);
 
-    setTimer(type, time, org);
+    // setTimer(type, time, org);
     return savedData;
   } catch (e) {
     return new Error(e);
@@ -72,7 +74,7 @@ async function save(type, bulkWriter, org, param) {
 
 async function renderDbData(db) {
   const data = ['Organisation', 'Issue', 'Member', 'PullRequest', 'Repository',
-    'Commit', 'CommunityProfile'
+    'Commit', 'CommunityProfile', 'ExternalContribution'
   ];
 
   console.log('**Count**');
@@ -108,11 +110,19 @@ function renderTimer(param) {
   }
 }
 
+async function getExternalData(bulkWriter) {
+  for (const project of techRadarProjects) {
+    await save('ExternalContributions', bulkWriter.writeExternalContributions, project.org, project);
+  }
+}
+
 async function getData() {
   renderWelcomeMessage();
 
   try {
-    const { db, bulkWriter } = await initDb();
+    const { db, sequelize, bulkWriter } = await initDb();
+
+    await getExternalData(bulkWriter);
     const organisations = await ghClient.getOrgs();
 
     for (const org of organisations) {
@@ -143,8 +153,8 @@ async function getData() {
       timer[org['login']].totalTime = performance.now() - totalTime;
     }
 
+    await bulkWriter.deleteExternalContributions(sequelize)
     timer.totalTime = performance.now() - timer.totalTime;
-
     await renderDbData(db);
     renderTimer();
   } catch (e) {

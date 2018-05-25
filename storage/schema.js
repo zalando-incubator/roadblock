@@ -133,6 +133,6 @@ module.exports = {
       primaryKey: true
     },
     total: Sequelize.INTEGER,
-    repository: Sequelize.STRING
+    member_id: Sequelize.BIGINT
   }
 };

@@ -15,7 +15,8 @@ function init(schema) {
     writePullRequests,
     writeCommits,
     writeCommunityProfile,
-    writeExternalContributions
+    writeExternalContributions,
+    deleteExternalContributions
   };
 }
 
@@ -131,20 +132,25 @@ async function writeIssues(issues) {
   }
 }
 
-async function writeExternalContributions(contributors, members) {
-  const filteredArray  = contributors.filter(contributor => {
-    return members.filter(member => {
-      return member.login === contributor.author.login;
-    }).length === 0;
-  });
-  console.log('filteredArray', filteredArray);
+async function writeExternalContributions(contributors) {
   const dbExternalContributions = arrayMapper('externalContribution', contributors);
-  console.log('contrib', dbExternalContributions[0]);
 
   try {
-    const c = await _models.ExternalContribution.bulkCreate(dbExternalContributions);
-    console.log('created', c);
-    return c;
+    return await _models.ExternalContribution.bulkCreate(dbExternalContributions);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function deleteExternalContributions(sequelize) {
+  try {
+    return await sequelize.query(`
+      DELETE FROM ExternalContribution
+      WHERE member_id NOT IN (
+        SELECT id
+        FROM Member
+      )
+    `);
   } catch (e) {
     return new Error(e);
   }

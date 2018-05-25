@@ -84,7 +84,6 @@ const connect = async function() {
     _models.Issue.belongsTo(_models.Repository);
     _models.Commit.belongsTo(_models.Repository);
     _models.CommunityProfile.belongsTo(_models.Repository);
-    _models.ExternalContribution.belongsTo(_models.Member);
 
     _models.Member.belongsToMany(_models.Organisation, { through: 'MemberOrganisation' });
     _models.Organisation.belongsToMany(_models.Member, { through: 'MemberOrganisation' });
@@ -94,7 +93,10 @@ const connect = async function() {
 
     sequelize.sync();
 
-    return _models;
+    return {
+      _models,
+      sequelize
+    };
   } catch (e) {
     console.error(e);
   }
