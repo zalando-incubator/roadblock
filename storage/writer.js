@@ -171,7 +171,7 @@ async function writeExternalContributions(contributors, repo) {
   const dbContributorsWithRepo = dbContributors.map(contributor => {
     return {
       ...contributor,
-      repository_id: repo
+      repository_name: repo
     };
   });
 
