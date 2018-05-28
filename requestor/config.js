@@ -8,6 +8,9 @@ const config = {
     repositories: org => {
       return `${url}/orgs/${org}/repos`;
     },
+    repository: (org, repo) => {
+      return `${url}/repos/${org}/${repo}`;
+    },
     pullRequests: (owner, repo, state = 'all') => {
       return `${url}/repos/${owner}/${repo}/pulls?state=${state}`;
     },
@@ -22,12 +25,21 @@ const config = {
     },
     communityProfile: (owner, name) => {
       return `${url}/repos/${owner}/${name}/community/profile`;
+    },
+    externalCollaboratorsForOrg: org => {
+      return `${url}/orgs/${org}/outside_collaborators`;
+    },
+    collaborators: (org, repo) => {
+      return `${url}/repos/${org}/${repo}/collaborators`;
+    },
+    contributorsForRepo: (org, repo) => {
+      return `${url}/repos/${org}/${repo}/stats/contributors`;
     }
   },
   token: null
 };
 
-const setToken = (value) => {
+const setToken = value => {
   config.token = value;
 };
 

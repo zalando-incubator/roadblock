@@ -75,6 +75,30 @@ module.exports = {
     'commit.comment_count': 'comment_count'
   },
 
+  collaboratorMap: {
+    id: 'user_id',
+    avatar_url: 'avatar',
+    html_url: 'url',
+    login: 'login',
+    'permissions.push': 'push',
+    'permissions.pull': 'pull',
+    'permissions.admin': 'admin'
+  },
+
+  contributionMap: {
+    'author.id': 'user_id',
+    total: 'total',
+    'author.login': 'login'
+  },
+
+  externalContributionMap: {
+    id: 'id',
+    total: 'total',
+    'author.id': 'member_id',
+    'author.login': 'login',
+    'author.html_url': 'url'
+  },
+
   communityProfileMap: {
     id: 'id',
     health_percentage: 'health_percentage',

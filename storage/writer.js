@@ -14,7 +14,11 @@ function init(schema) {
     writeRepositories,
     writePullRequests,
     writeCommits,
-    writeCommunityProfile
+    writeCommunityProfile,
+    writeCollaborators,
+    writeContributions,
+    writeExternalContributions,
+    deleteExternalContributions
   };
 }
 
@@ -59,6 +63,38 @@ async function writeCommits(commits, repoId) {
 
   try {
     return await _models.Commit.bulkCreate(dbCommitsWithRepo);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function writeCollaborators(collaborators, repoId) {
+  const dbCollaborators = arrayMapper('collaborator', collaborators);
+  const dbCollaboratorsWithRepo = dbCollaborators.map(x => {
+    return {
+      ...x,
+      repository_id: repoId
+    };
+  });
+
+  try {
+    return await _models.Collaborator.bulkCreate(dbCollaboratorsWithRepo);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function writeContributions(contributions, repoId) {
+  const dbContributions = arrayMapper('contribution', contributions);
+  const dbContributionsWithRepo = dbContributions.map(x => {
+    return {
+      ...x,
+      repository_id: repoId
+    };
+  });
+
+  try {
+    return await _models.Contribution.bulkCreate(dbContributionsWithRepo);
   } catch (e) {
     return new Error(e);
   }
@@ -110,7 +146,7 @@ async function writeMembers(members, organisation) {
   try {
     for (const member of dbMembers) {
       await _models.Member.findOrCreate({ where: member }).spread(
-        (createdMember) => {
+        createdMember => {
           return organisation.addMember(createdMember);
         }
       );
@@ -125,6 +161,36 @@ async function writeIssues(issues) {
 
   try {
     return await _models.Issue.bulkCreate(dbIssues);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function writeExternalContributions(contributors, repo) {
+  const dbContributors = arrayMapper('externalContribution', contributors);
+  const dbContributorsWithRepo = dbContributors.map(contributor => {
+    return {
+      ...contributor,
+      repository_name: repo
+    };
+  });
+
+  try {
+    return await _models.ExternalContribution.bulkCreate(dbContributorsWithRepo);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function deleteExternalContributions(sequelize) {
+  try {
+    return await sequelize.query(`
+      DELETE FROM ExternalContribution
+      WHERE member_id IS NULL OR member_id NOT IN (
+        SELECT id
+        FROM Member
+      )
+    `);
   } catch (e) {
     return new Error(e);
   }

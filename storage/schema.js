@@ -54,7 +54,11 @@ module.exports = {
     following: Sequelize.INTEGER,
     collaborators: Sequelize.INTEGER,
     public_repositories: Sequelize.INTEGER,
-    private_repositories: Sequelize.INTEGER
+    private_repositories: Sequelize.INTEGER,
+    type: {
+      type: Sequelize.STRING,
+      defaultValue: 'internal'
+    }
   },
 
   Repository: {
@@ -71,7 +75,11 @@ module.exports = {
     stars: Sequelize.INTEGER,
     forks: Sequelize.INTEGER,
     open_issues: Sequelize.INTEGER,
-    watchers: Sequelize.INTEGER
+    watchers: Sequelize.INTEGER,
+    type: {
+      type: Sequelize.STRING,
+      defaultValue: 'internal'
+    }
   },
 
   PullRequest: {
@@ -106,5 +114,33 @@ module.exports = {
     pull_request_template: Sequelize.BOOLEAN,
     readme: Sequelize.BOOLEAN,
     license: Sequelize.STRING
+  },
+
+  Collaborator: {
+    user_id: Sequelize.BIGINT,
+    avatar: Sequelize.STRING(400),
+    login: Sequelize.STRING(100),
+    url: Sequelize.STRING,
+    pull: Sequelize.BOOLEAN,
+    push: Sequelize.BOOLEAN,
+    admin: Sequelize.BOOLEAN
+  },
+
+  Contribution: {
+    user_id: Sequelize.BIGINT,
+    total: Sequelize.BIGINT,
+    login: Sequelize.STRING(100)
+  },
+
+  ExternalContribution: {
+    id: {
+      type: Sequelize.BIGINT,
+      primaryKey: true
+    },
+    login: Sequelize.STRING,
+    url: Sequelize.STRING,
+    total: Sequelize.INTEGER,
+    member_id: Sequelize.BIGINT,
+    repository_name: Sequelize.STRING
   }
 };

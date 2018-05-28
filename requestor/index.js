@@ -75,8 +75,42 @@ async function getMembers(org) {
 
 async function getCommunityProfile(org, repo) {
   try {
-    const response = await requestorTemplatePreview.get(api.communityProfile(org, repo));
+    const response = await requestorTemplatePreview.get(
+      api.communityProfile(org, repo)
+    );
     return response.body;
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function getExternalCollaboratorsForOrg(org) {
+  try {
+    return await requestorTemplate.getAll(api.externalCollaboratorsForOrg(org));
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function getCollaborators(org, repo) {
+  try {
+    return await requestorTemplate.getAll(api.collaborators(org, repo));
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function getContributions(org, repo) {
+  try {
+    return await requestorTemplate.getAll(api.contributorsForRepo(org, repo));
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function getExternalContributions(org, repo) {
+  try {
+    return await requestorTemplate.getAll(api.contributorsForRepo(org, repo));
   } catch (e) {
     return new Error(e);
   }
@@ -102,5 +136,9 @@ module.exports = {
   getRepos,
   getOrgs,
   getOrgDetails,
-  getCommunityProfile
+  getCommunityProfile,
+  getExternalCollaboratorsForOrg,
+  getCollaborators,
+  getContributions,
+  getExternalContributions
 };
