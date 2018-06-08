@@ -68,9 +68,9 @@ module.exports = {
     id: 'id',
     'commit.message': 'message',
     'author.id': 'author',
-    'author.date': 'author_date',
+    'commit.author.date': 'author_date',
     'committer.id': 'committer',
-    'committer.date': 'committer_date',
+    'commit.committer.date': 'committer_date',
     html_url: 'url',
     'commit.comment_count': 'comment_count'
   },
@@ -86,17 +86,9 @@ module.exports = {
   },
 
   contributionMap: {
-    'author.id': 'user_id',
-    total: 'total',
-    'author.login': 'login'
-  },
-
-  externalContributionMap: {
-    id: 'id',
-    total: 'total',
-    'author.id': 'member_id',
-    'author.login': 'login',
-    'author.html_url': 'url'
+    id: 'user_id',
+    contributions: 'total',
+    login: 'login'
   },
 
   communityProfileMap: {

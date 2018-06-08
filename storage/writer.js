@@ -86,17 +86,20 @@ async function writeCollaborators(collaborators, repoId) {
 
 async function writeContributions(contributions, repoId) {
   const dbContributions = arrayMapper('contribution', contributions);
-  const dbContributionsWithRepo = dbContributions.map(x => {
-    return {
-      ...x,
-      repository_id: repoId
-    };
-  });
 
-  try {
-    return await _models.Contribution.bulkCreate(dbContributionsWithRepo);
-  } catch (e) {
-    return new Error(e);
+  if (dbContributions.length > 0) {
+    const dbContributionsWithRepo = dbContributions.map(x => {
+      return {
+        ...x,
+        repository_id: repoId
+      };
+    });
+
+    try {
+      return await _models.Contribution.bulkCreate(dbContributionsWithRepo);
+    } catch (e) {
+      return new Error(e);
+    }
   }
 }
 
@@ -111,7 +114,7 @@ async function writePullRequests(prs) {
 }
 
 async function writeRepositories(repos) {
-  const dbRepos = arrayMapper('repo', repos);
+  const dbRepos = arrayMapper('repo', repos.filter(x => !x.fork));
 
   try {
     return await _models.Repository.bulkCreate(dbRepos);
@@ -167,7 +170,7 @@ async function writeIssues(issues) {
 }
 
 async function writeExternalContributions(contributors, repo) {
-  const dbContributors = arrayMapper('externalContribution', contributors);
+  const dbContributors = arrayMapper('contribution', contributors);
   const dbContributorsWithRepo = dbContributors.map(contributor => {
     return {
       ...contributor,
@@ -176,7 +179,9 @@ async function writeExternalContributions(contributors, repo) {
   });
 
   try {
-    return await _models.ExternalContribution.bulkCreate(dbContributorsWithRepo);
+    return await _models.ExternalContribution.bulkCreate(
+      dbContributorsWithRepo
+    );
   } catch (e) {
     return new Error(e);
   }
@@ -186,7 +191,7 @@ async function deleteExternalContributions(sequelize) {
   try {
     return await sequelize.query(`
       DELETE FROM ExternalContribution
-      WHERE member_id IS NULL OR member_id NOT IN (
+      WHERE user_id IS NULL OR user_id NOT IN (
         SELECT id
         FROM Member
       )

@@ -1,4 +1,6 @@
-const { setToken } = require('./requestor/config');
+const { setToken } = require('./requestor/config'),
+  fs = require('fs'),
+  sequelize = require('sequelize');
 
 try {
   initToken();
@@ -68,9 +70,10 @@ async function save(type, bulkWriter, org, param) {
   try {
     const time = performance.now();
     const data = await ghClient[`get${type}`](org, param && param.name);
-    const savedData = type === 'Members'
-      ? await bulkWriter(data, param)
-      : await bulkWriter(data, param && (param.id || param.name));
+    const savedData =
+      type === 'Members'
+        ? await bulkWriter(data, param)
+        : await bulkWriter(data, param && (param.id || param.name));
 
     setTimer(type, time, org);
     return savedData;
@@ -101,6 +104,50 @@ async function renderDbData(db) {
       console.log(`${value}: ${await db[value].count()}`);
     })
   );
+}
+
+async function exportDbData(db) {
+  // create a repo file listing the 100 most active projects
+  var repos = await db.Repository.findAll({
+    limit: 100,
+    order: sequelize.literal('(forks+stars+watchers) DESC')
+  });
+
+  repos = repos.map(x => x.dataValues);
+  fs.writeFile(
+    'data/repositories.json',
+    JSON.stringify(repos, null, 2),
+    'utf8'
+  );
+
+  // organisation stats
+  var orgs = await db.Organisation.findAll();
+  orgs = orgs.map(x => x.dataValues);
+  fs.writeFile(
+    'data/organisations.json',
+    JSON.stringify(orgs, null, 2),
+    'utf8'
+  );
+
+  // general statistics
+
+  var stats = {};
+  stats.stars = await db.Repository.sum('stars');
+  stats.projects = await db.Repository.count();
+  stats.languages = await db.Repository.count({
+    col: 'language',
+    distinct: true
+  });
+  stats.forks = await db.Repository.sum('forks');
+  stats.members = await db.Member.count();
+  stats.contributors = await db.Contribution.count({
+    col: 'user_id',
+    distinct: true
+  });
+
+  fs.writeFile('data/statistics.json', JSON.stringify(stats, null, 2), 'utf8');
+
+  //TODO: write this to the database for snapshots of stats over time
 }
 
 function renderTimer(param) {
@@ -167,18 +214,10 @@ async function getData() {
       );
 
       // Fetch all members in the current organisation
-      await save('Members',
-        bulkWriter.writeMembers,
-        org.login,
-        storedOrg
-      );
+      await save('Members', bulkWriter.writeMembers, org.login, storedOrg);
 
       // Fetch all repositories in the current org
-      let repos = await save(
-        'Repos',
-        bulkWriter.writeRepositories,
-        org.login
-      );
+      let repos = await save('Repos', bulkWriter.writeRepositories, org.login);
 
       // Store the repository name, id for future queries and discard the rest
       const trimmedRepos = repos.map(x => {
@@ -193,6 +232,7 @@ async function getData() {
       // profiles, prs, commits and collaborators
       for (const repo of trimmedRepos) {
         // Fetch community statistics on presence of COC, readme, templates and license file
+
         await save(
           'CommunityProfile',
           bulkWriter.writeCommunityProfile,
@@ -209,14 +249,9 @@ async function getData() {
         );
 
         // Fetch all commits for the repository
-        await save(
-          'Commits',
-          bulkWriter.writeCommits,
-          org.login,
-          repo
-        );
+        await save('Commits', bulkWriter.writeCommits, org.login, repo);
 
-        // Get all collaborators for each repository
+        /// Get all collaborators for each repository
         await save(
           'Collaborators',
           bulkWriter.writeCollaborators,
@@ -234,11 +269,7 @@ async function getData() {
       }
 
       // Fetch all issues for the entire organisation
-      await save(
-        'Issues',
-        bulkWriter.writeIssues,
-        org.login
-      );
+      await save('Issues', bulkWriter.writeIssues, org.login);
 
       // Log how much time it took to fetch all data for a organisation
       const totalTime = timer[org['login']].totalTime;
@@ -249,8 +280,8 @@ async function getData() {
     await bulkWriter.deleteExternalContributions(sequelize);
 
     timer.totalTime = performance.now() - timer.totalTime;
-
     await renderDbData(db);
+    await exportDbData(db);
     renderTimer();
   } catch (e) {
     console.log(e);

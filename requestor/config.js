@@ -6,7 +6,7 @@ const config = {
       return `${url}/orgs/${org}`;
     },
     repositories: org => {
-      return `${url}/orgs/${org}/repos`;
+      return `${url}/orgs/${org}/repos?type=public`;
     },
     repository: (org, repo) => {
       return `${url}/repos/${org}/${repo}`;
@@ -32,8 +32,11 @@ const config = {
     collaborators: (org, repo) => {
       return `${url}/repos/${org}/${repo}/collaborators`;
     },
-    contributorsForRepo: (org, repo) => {
+    contributorStatsForRepo: (org, repo) => {
       return `${url}/repos/${org}/${repo}/stats/contributors`;
+    },
+    contributorsForRepo: (org, repo) => {
+      return `${url}/repos/${org}/${repo}/contributors`;
     }
   },
   token: null
