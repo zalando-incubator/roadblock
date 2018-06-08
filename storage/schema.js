@@ -138,9 +138,8 @@ module.exports = {
       primaryKey: true
     },
     login: Sequelize.STRING,
-    url: Sequelize.STRING,
     total: Sequelize.INTEGER,
-    member_id: Sequelize.BIGINT,
+    user_id: Sequelize.BIGINT,
     repository_name: Sequelize.STRING
   }
 };

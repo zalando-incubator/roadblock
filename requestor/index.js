@@ -118,8 +118,9 @@ async function getExternalContributions(org, repo) {
 
 function logger({ log = null } = {}) {
   const result = {};
-  result.log = log
-    || ((level, message, data) => {
+  result.log =
+    log ||
+    ((level, message, data) => {
       if (data.target) {
         console.log(`     ⬇️      Downloading ${data.target}`);
       }
