@@ -6,7 +6,10 @@ const config = {
       return `${url}/orgs/${org}`;
     },
     repositories: org => {
-      return `${url}/orgs/${org}/repos`;
+      return `${url}/orgs/${org}/repos?type=public`;
+    },
+    repository: (org, repo) => {
+      return `${url}/repos/${org}/${repo}`;
     },
     pullRequests: (owner, repo, state = 'all') => {
       return `${url}/repos/${owner}/${repo}/pulls?state=${state}`;
@@ -22,16 +25,31 @@ const config = {
     },
     communityProfile: (owner, name) => {
       return `${url}/repos/${owner}/${name}/community/profile`;
+    },
+    externalCollaboratorsForOrg: org => {
+      return `${url}/orgs/${org}/outside_collaborators`;
+    },
+    collaborators: (org, repo) => {
+      return `${url}/repos/${org}/${repo}/collaborators`;
+    },
+    contributorStatsForRepo: (org, repo) => {
+      return `${url}/repos/${org}/${repo}/stats/contributors`;
+    },
+    contributorsForRepo: (org, repo) => {
+      return `${url}/repos/${org}/${repo}/contributors`;
+    },
+    memberEvents: member => {
+      return `${url}/users/${member}/events/public`;
     }
   },
   token: null
 };
 
-const setToken = (value) => {
+const setToken = value => {
   config.token = value;
 };
 
-module.exports = {
+export default {
   config,
   setToken
 };

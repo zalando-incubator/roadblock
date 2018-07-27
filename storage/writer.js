@@ -14,7 +14,12 @@ function init(schema) {
     writeRepositories,
     writePullRequests,
     writeCommits,
-    writeCommunityProfile
+    writeCommunityProfile,
+    writeCollaborators,
+    writeContributions,
+    writeExternalContributions,
+    writeMemberRepositories,
+    deleteExternalContributions
   };
 }
 
@@ -64,6 +69,41 @@ async function writeCommits(commits, repoId) {
   }
 }
 
+async function writeCollaborators(collaborators, repoId) {
+  const dbCollaborators = arrayMapper('collaborator', collaborators);
+  const dbCollaboratorsWithRepo = dbCollaborators.map(x => {
+    return {
+      ...x,
+      repository_id: repoId
+    };
+  });
+
+  try {
+    return await _models.Collaborator.bulkCreate(dbCollaboratorsWithRepo);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function writeContributions(contributions, repoId) {
+  const dbContributions = arrayMapper('contribution', contributions);
+
+  if (dbContributions.length > 0) {
+    const dbContributionsWithRepo = dbContributions.map(x => {
+      return {
+        ...x,
+        repository_id: repoId
+      };
+    });
+
+    try {
+      return await _models.Contribution.bulkCreate(dbContributionsWithRepo);
+    } catch (e) {
+      return new Error(e);
+    }
+  }
+}
+
 async function writePullRequests(prs) {
   const dbPrs = arrayMapper('pullRequest', prs);
 
@@ -75,7 +115,7 @@ async function writePullRequests(prs) {
 }
 
 async function writeRepositories(repos) {
-  const dbRepos = arrayMapper('repo', repos);
+  const dbRepos = arrayMapper('repo', repos.filter(x => !x.fork));
 
   try {
     return await _models.Repository.bulkCreate(dbRepos);
@@ -110,7 +150,7 @@ async function writeMembers(members, organisation) {
   try {
     for (const member of dbMembers) {
       await _models.Member.findOrCreate({ where: member }).spread(
-        (createdMember) => {
+        createdMember => {
           return organisation.addMember(createdMember);
         }
       );
@@ -125,6 +165,46 @@ async function writeIssues(issues) {
 
   try {
     return await _models.Issue.bulkCreate(dbIssues);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function writeMemberRepositories(repos) {
+  try {
+    return await _models.MemberRepository.bulkCreate(repos);
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function writeExternalContributions(contributors, repo) {
+  const dbContributors = arrayMapper('contribution', contributors);
+  const dbContributorsWithRepo = dbContributors.map(contributor => {
+    return {
+      ...contributor,
+      repository_name: repo
+    };
+  });
+
+  try {
+    return await _models.ExternalContribution.bulkCreate(
+      dbContributorsWithRepo
+    );
+  } catch (e) {
+    return new Error(e);
+  }
+}
+
+async function deleteExternalContributions(sequelize) {
+  try {
+    return await sequelize.query(`
+      DELETE FROM ExternalContribution
+      WHERE user_id IS NULL OR user_id NOT IN (
+        SELECT id
+        FROM Member
+      )
+    `);
   } catch (e) {
     return new Error(e);
   }

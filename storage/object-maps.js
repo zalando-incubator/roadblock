@@ -68,11 +68,27 @@ module.exports = {
     id: 'id',
     'commit.message': 'message',
     'author.id': 'author',
-    'author.date': 'author_date',
+    'commit.author.date': 'author_date',
     'committer.id': 'committer',
-    'committer.date': 'committer_date',
+    'commit.committer.date': 'committer_date',
     html_url: 'url',
     'commit.comment_count': 'comment_count'
+  },
+
+  collaboratorMap: {
+    id: 'user_id',
+    avatar_url: 'avatar',
+    html_url: 'url',
+    login: 'login',
+    'permissions.push': 'push',
+    'permissions.pull': 'pull',
+    'permissions.admin': 'admin'
+  },
+
+  contributionMap: {
+    id: 'user_id',
+    contributions: 'total',
+    login: 'login'
   },
 
   communityProfileMap: {
