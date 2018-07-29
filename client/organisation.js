@@ -1,5 +1,7 @@
 const Base = require('./base.js');
 const Sequelize = require('sequelize');
+const mapper = require('object-mapper');
+const helper = require('./helper.js');
 
 module.exports = class Organisation extends Base {
   constructor(githubClient, databaseClient) {
@@ -10,7 +12,8 @@ module.exports = class Organisation extends Base {
         type: Sequelize.BIGINT,
         primaryKey: true
       },
-      name: Sequelize.STRING(600),
+      name: Sequelize.STRING(300),
+      login: Sequelize.STRING(300),
       avatar: Sequelize.STRING,
       created_at: Sequelize.DATE,
       followers: Sequelize.INTEGER,
@@ -24,9 +27,10 @@ module.exports = class Organisation extends Base {
       }
     };
 
-    this.mapper = {
+    this.map = {
       id: 'id',
-      login: 'name',
+      login: 'login',
+      name: 'name',
       avatar_url: 'avatar',
       created_at: 'created_at',
       follows: 'followers',
@@ -36,18 +40,31 @@ module.exports = class Organisation extends Base {
       public_repos: 'public_repositories'
     };
 
-    this.model = this.dbClient.define(
-      'Organisation',
-      this.schema,
-      this.dbConfig
-    );
+    this.name = 'Organisation';
+  }
+
+  sync(force) {
+    this.model.belongsToMany(this.dbClient.models.Member, {
+      through: 'MemberOrganisation'
+    });
+
+    super.sync(force);
   }
 
   async getAll() {
-    return this.ghClient.getOrgs();
+    return await this.ghClient.getOrgs();
   }
 
-  async getForUser() {}
+  async getDetails(orgName) {
+    return await this.ghClient.getOrgDetails(orgName);
+  }
 
-  saveOrUpdate(org) {}
+  async getForUser() {
+    return await this.ghClient.getOrgsForUser();
+  }
+
+  async saveOrUpdate(org) {
+    const dbOrg = mapper(org, this.map);
+    return await helper.updateOrCreate(this.model, { id: dbOrg.id }, dbOrg);
+  }
 };

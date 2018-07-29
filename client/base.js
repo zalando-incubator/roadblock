@@ -10,6 +10,12 @@ module.exports = class Base {
     };
   }
 
+  // Defines the model and schema in the sequelize singleton
+  define() {
+    this.model = this.dbClient.define(this.name, this.schema, this.dbConfig);
+  }
+
+  // syncs the schema and any of the intertable relations
   sync(force) {
     this.model.sync(force);
   }

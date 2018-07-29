@@ -33,12 +33,8 @@ async function getOrgs() {
 }
 
 async function getRepos(org) {
-  try {
-    const response = await requestorTemplate.get(api.repositories(org));
-    return response.body;
-  } catch (e) {
-    return new Error(e);
-  }
+  const response = await requestorTemplate.get(api.repositories(org));
+  return response.body;
 }
 
 async function getPullRequests(org, repo) {

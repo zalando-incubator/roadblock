@@ -48,10 +48,6 @@ const repos = [
     org: 'eclipse'
   },
   {
-    name: 'kubernetes',
-    org: 'kubernetes'
-  },
-  {
     name: 'elasticsearch',
     org: 'elastic'
   },
@@ -66,6 +62,12 @@ const repos = [
   {
     name: 'redis',
     org: 'antirez'
+  },
+  {
+    org: 'kubernetes'
+  },
+  {
+    org: 'kubernetes-incubator'
   }
 ];
 

@@ -35,7 +35,7 @@ module.exports = class DatabaseClient {
     );
   }
 
-  db() {
+  async db() {
     await this.sequelize.authenticate();
     return this.sequelize;
   }

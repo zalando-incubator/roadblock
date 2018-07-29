@@ -6,10 +6,12 @@ module.exports = class GithubClient {
     this.url = baseUrl;
 
     this.api = {
-      organisations: `${this.url}/user/orgs`,
+      organisations: `${this.url}/organizations`,
+      userOrganisations: `${this.url}/user/orgs`,
       organisation: org => {
         return `${this.url}/orgs/${org}`;
       },
+
       repositories: org => {
         return `${this.url}/orgs/${org}/repos?type=public`;
       },
@@ -53,6 +55,19 @@ module.exports = class GithubClient {
       headers: this.headers,
       logger: this.logger()
     });
+
+    this.previewHeaders = {
+      ...this.headers,
+      accept: 'application/vnd.github.black-panther-preview+json'
+    };
+    this.requestorTemplatePreview = ghrequestor.defaults({
+      headers: this.previewHeaders,
+      logger: this.logger()
+    });
+  }
+
+  getBaseUrl() {
+    return this.url;
   }
 
   async getOrgDetails(org) {
@@ -67,41 +82,32 @@ module.exports = class GithubClient {
   }
 
   async getOrgs() {
-    try {
-      const response = await this.requestorTemplate.get(this.api.organisations);
-      return response.body;
-    } catch (e) {
-      return new Error(e);
-    }
+    const response = await this.requestorTemplate.get(this.api.organisations);
+    return response.body;
+  }
+
+  async getOrgsForUser() {
+    const response = await this.requestorTemplate.get(
+      this.api.userOrganisations
+    );
+    return response.body;
   }
 
   async getRepos(org) {
-    try {
-      const response = await this.requestorTemplate.get(
-        this.api.repositories(org)
-      );
-      return response.body;
-    } catch (e) {
-      return new Error(e);
-    }
+    const response = await this.requestorTemplate.get(
+      this.api.repositories(org)
+    );
+    return response.body;
   }
 
   async getPullRequests(org, repo) {
-    try {
-      return await this.requestorTemplate.getAll(
-        this.api.pullRequests(org, repo)
-      );
-    } catch (e) {
-      return new Error(e);
-    }
+    return await this.requestorTemplate.getAll(
+      this.api.pullRequests(org, repo)
+    );
   }
 
   async getCommits(org, repo) {
-    try {
-      return await this.requestorTemplate.getAll(this.api.commits(org, repo));
-    } catch (e) {
-      return new Error(e);
-    }
+    return await this.requestorTemplate.getAll(this.api.commits(org, repo));
   }
 
   async getIssues(org) {
@@ -113,16 +119,12 @@ module.exports = class GithubClient {
   }
 
   async getMembers(org) {
-    try {
-      return await this.requestorTemplate.getAll(this.api.members(org));
-    } catch (e) {
-      return new Error(e);
-    }
+    return await this.requestorTemplate.getAll(this.api.members(org));
   }
 
   async getCommunityProfile(org, repo) {
     try {
-      const response = await requestorTemplatePreview.get(
+      const response = await this.requestorTemplatePreview.get(
         this.api.communityProfile(org, repo)
       );
       return response.body;
@@ -142,23 +144,15 @@ module.exports = class GithubClient {
   }
 
   async getCollaborators(org, repo) {
-    try {
-      return await this.requestorTemplate.getAll(
-        this.api.collaborators(org, repo)
-      );
-    } catch (e) {
-      return new Error(e);
-    }
+    return await this.requestorTemplate.getAll(
+      this.api.collaborators(org, repo)
+    );
   }
 
   async getContributions(org, repo) {
-    try {
-      return await this.requestorTemplate.getAll(
-        this.api.contributorsForRepo(org, repo)
-      );
-    } catch (e) {
-      return new Error(e);
-    }
+    return await this.requestorTemplate.getAll(
+      this.api.contributorsForRepo(org, repo)
+    );
   }
 
   async getExternalContributions(org, repo) {
@@ -166,17 +160,6 @@ module.exports = class GithubClient {
       return await this.requestorTemplate.getAll(
         this.api.contributorsForRepo(org, repo)
       );
-    } catch (e) {
-      return new Error(e);
-    }
-  }
-
-  async getMemberPushEvents(member) {
-    try {
-      const response = await requestorTemplatePreview.get(
-        this.api.memberEvents(member)
-      );
-      return response.body;
     } catch (e) {
       return new Error(e);
     }
