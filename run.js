@@ -28,13 +28,9 @@ async function init() {
   // Initialize the github and database clients
   var github = new GithubClient(token);
   var database = await new DatabaseClient(config.db).db();
-  var client = Client(github, database);
+  var client = Client(github, database, true);
   var exportClient = new ExportClient(database, config.export);
 
-  await client.ExternalContribution.getAndStore(config.externalProjects);
-  await client.ExternalContribution.removeContributionsWithoutMembers();
-
-  /*
   var orgs = await client.Organisation.getForUser();
 
   // Iterate through all orgs and collect members and repos
@@ -45,8 +41,8 @@ async function init() {
       org = await client.Organisation.saveOrUpdate(org);
 
       // Get all members in the org and save them
-      // var membersInOrg = await client.Member.getAll(org.login);
-      // client.Member.bulkCreate(membersInOrg, org);
+      var membersInOrg = await client.Member.getAll(org.login);
+      await client.Member.bulkCreate(membersInOrg, org);
 
       // Get all repositories in the org and save them
       var reposInOrg = await client.Repository.getAll(org.login);
@@ -56,14 +52,20 @@ async function init() {
       var issuesInOrg = await client.Issue.getAll(org.login);
       await client.Issue.bulkCreate(issuesInOrg);
 
+      // For each repo we must collect repo-specific info
       for (const repo of reposInOrg) {
-        // Get Collaborators on the repo
-        var collaborators = await client.Collaborator.getAll(
-          org.login,
-          repo.name
-        );
-        await client.Collaborator.bulkCreate(collaborators, repo.id);
-
+        try {
+          // Get Collaborators on the repo
+          var collaborators = await client.Collaborator.getAll(
+            org.login,
+            repo.name
+          );
+          await client.Collaborator.bulkCreate(collaborators, repo.id);
+        } catch (e) {
+          console.warn(
+            'Failed getting Collaborators for ' + repo.name + ': ' + e
+          );
+        }
         // Get PRs on each repo
         var prs = await client.PullRequest.getAll(org.login, repo.name);
         await client.PullRequest.bulkCreate(prs);
@@ -89,9 +91,17 @@ async function init() {
     }
   }
 
+  // Get all our external projects which we might contribute to
+  await client.ExternalContribution.getAndStore(config.externalProjects);
+
+  // Clean up external contributions so it is only those that fit our members
+  await client.ExternalContribution.removeContributionsWithoutMembers();
+
   // Finally when everything has been saved to the Database,
   // extract json files with the full dataset
-  exportClient.export();*/
+  exportClient.export();
+
+  console.log('########  COMPLETE ########');
 }
 
 init();

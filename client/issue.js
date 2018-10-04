@@ -20,7 +20,8 @@ module.exports = class Issue extends Base {
       updated_at: Sequelize.DATE,
       comments: Sequelize.INTEGER,
       created_at: Sequelize.DATE,
-      pull_request: Sequelize.STRING(400)
+      pull_request: Sequelize.STRING(400),
+      repository_id: Sequelize.BIGINT
     };
 
     this.map = {
@@ -39,11 +40,6 @@ module.exports = class Issue extends Base {
     };
 
     this.name = 'Issue';
-  }
-
-  sync(force) {
-    this.model.belongsTo(this.dbClient.models.Repository);
-    super.sync(force);
   }
 
   async getAll(orgName, repoName) {

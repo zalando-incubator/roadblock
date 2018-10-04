@@ -57,7 +57,7 @@ module.exports = class Repository extends Base {
 
   async saveOrUpdate(repository) {
     const dbRepo = mapper(repository, this.map);
-    await this.model.upsert(dbRepo, { returning: true });
+    await this.model.upsert(dbRepo);
     return dbRepo;
   }
 

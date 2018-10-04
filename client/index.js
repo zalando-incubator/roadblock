@@ -55,7 +55,7 @@ module.exports = function(github, database, reset = false) {
   s.Issue.sync(reset);
   s.ExternalContribution.sync(reset);
 
-  database.sync();
+  database.sync({ force: reset });
 
   return s;
 };
