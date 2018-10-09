@@ -14,8 +14,9 @@ module.exports = class GithubClient {
       },
 
       repositories: org => {
-        return `${this.url}/orgs/${org}/repos?type=public`;
+        return `${this.url}/orgs/${org}/repos?type=sources`;
       },
+
       repository: (org, repo) => {
         return `${this.url}/repos/${org}/${repo}`;
       },
