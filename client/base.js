@@ -20,6 +20,11 @@ module.exports = class Base {
     this.model.sync(force);
   }
 
+  // generic delete statement
+  async destroy(where) {
+    return this.model.destroy(where);
+  }
+
   getSchema() {
     return this.schema;
   }
