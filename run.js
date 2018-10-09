@@ -4,6 +4,7 @@ const DatabaseClient = require('./database/client.js');
 const Client = require('./client');
 const ExportClient = require('./export/client.js');
 const cliProgress = require('cli-progress');
+const { performance } = require('perf_hooks');
 
 // temporary config object - we will remove later
 const config = {
@@ -31,7 +32,7 @@ const barlogger = function() {
 };
 
 const timePassed = function(startTime) {
-  var duration = startTime - performance.now();
+  var duration = performance.now() - startTime;
 
   var milliseconds = parseInt((duration % 1000) / 100),
     seconds = parseInt((duration / 1000) % 60),
@@ -83,7 +84,7 @@ async function init() {
 
   // Iterate through all orgs and collect members and repos
   for (let org of orgs) {
-    if (org.login !== 'umbraco') {
+    if ((orgs === '*' || orgs.indexOf(org.login)) && org.login !== 'umbraco') {
       console.log(` ⬇️  Downloading ${org.login}`);
 
       // Get the org details and save it
@@ -96,6 +97,8 @@ async function init() {
 
       console.log(` ✅  Saving ${reposInOrg.length} ${org.login} repositories`);
       reposInOrg = await client.Repository.bulkCreate(reposInOrg);
+
+      timePassed(start);
 
       // Get all issues for the entire organisation
       console.log(` ⬇️  Downloading ${org.login} issues`);
@@ -121,12 +124,12 @@ async function init() {
       );
       let progress = 0;
 
-      repoProgress.start(reposInOrg.length, 0);
-      // For each repo we must collect repo-specific info
-
       console.log(
         ` ⬇️  Downloading repository data from ${org.login} repositories`
       );
+      repoProgress.start(reposInOrg.length, 0);
+      // For each repo we must collect repo-specific info
+
       for (const repo of reposInOrg) {
         try {
           // Get Collaborators on the repo
