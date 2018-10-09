@@ -3,6 +3,7 @@ const GithubClient = require('./github/client.js');
 const DatabaseClient = require('./database/client.js');
 const Client = require('./client');
 const ExportClient = require('./export/client.js');
+const cliProgress = require('cli-progress');
 
 // temporary config object - we will remove later
 const config = {
@@ -19,8 +20,53 @@ const config = {
   externalProjects: require('./config/tech-radar.js')
 };
 
+const barlogger = function() {
+  const result = {};
+
+  result.log = (level, message, data) => {
+    process.stdout.write('.');
+  };
+
+  return result;
+};
+
+const timePassed = function(startTime) {
+  var duration = startTime - performance.now();
+
+  var milliseconds = parseInt((duration % 1000) / 100),
+    seconds = parseInt((duration / 1000) % 60),
+    minutes = parseInt((duration / (1000 * 60)) % 60),
+    hours = parseInt((duration / (1000 * 60 * 60)) % 24);
+
+  hours = hours < 10 ? '0' + hours : hours;
+  minutes = minutes < 10 ? '0' + minutes : minutes;
+  seconds = seconds < 10 ? '0' + seconds : seconds;
+
+  console.log(
+    ' ⏱  Time passed: ' +
+      hours +
+      ':' +
+      minutes +
+      ':' +
+      seconds +
+      '.' +
+      milliseconds
+  );
+};
+
 async function init() {
   var token = process.argv[2];
+  var orgs = process.argv[3];
+  var tasks = process.argv[4];
+
+  if (tasks && tasks !== '*') {
+    tasks = tasks.split(',');
+  }
+
+  if (orgs && orgs !== '*') {
+    orgs = orgs.split(',');
+  }
+
   if (!token) {
     throw 'Github token argument is empty, please provide a token. `node run.js <token>`';
   }
@@ -31,28 +77,56 @@ async function init() {
   var client = Client(github, database, true);
   var exportClient = new ExportClient(database, config.export);
 
+  var start = performance.now();
+
   var orgs = await client.Organisation.getForUser();
 
   // Iterate through all orgs and collect members and repos
   for (let org of orgs) {
     if (org.login !== 'umbraco') {
+      console.log(` ⬇️  Downloading ${org.login}`);
+
       // Get the org details and save it
       org = await client.Organisation.getDetails(org.login);
       org = await client.Organisation.saveOrUpdate(org);
 
-      // Get all members in the org and save them
-      var membersInOrg = await client.Member.getAll(org.login);
-      await client.Member.bulkCreate(membersInOrg, org);
-
+      console.log(` ⬇️  Downloading ${org.login} repositories`);
       // Get all repositories in the org and save them
       var reposInOrg = await client.Repository.getAll(org.login);
+
+      console.log(` ✅  Saving ${reposInOrg.length} ${org.login} repositories`);
       reposInOrg = await client.Repository.bulkCreate(reposInOrg);
 
       // Get all issues for the entire organisation
-      var issuesInOrg = await client.Issue.getAll(org.login);
+      console.log(` ⬇️  Downloading ${org.login} issues`);
+      var issuesInOrg = await client.Issue.getAll(org.login, barlogger());
+
+      console.log(` ✅  Saving ${issuesInOrg.length} ${org.login} issues`);
       await client.Issue.bulkCreate(issuesInOrg);
 
+      timePassed(start);
+
+      // Get all members in the org and save them
+      console.log(` ⬇️  Downloading ${org.login} members`);
+      var membersInOrg = await client.Member.getAll(org.login, barlogger());
+
+      console.log(` ✅  Saving ${membersInOrg.length} ${org.login} members`);
+      await client.Member.bulkCreate(membersInOrg, org);
+
+      timePassed(start);
+
+      const repoProgress = new cliProgress.Bar(
+        {},
+        cliProgress.Presets.shades_classic
+      );
+      let progress = 0;
+
+      repoProgress.start(reposInOrg.length, 0);
       // For each repo we must collect repo-specific info
+
+      console.log(
+        ` ⬇️  Downloading repository data from ${org.login} repositories`
+      );
       for (const repo of reposInOrg) {
         try {
           // Get Collaborators on the repo
@@ -79,6 +153,10 @@ async function init() {
           org.login,
           repo.name
         );
+        contributions.map(contrib => {
+          contrib.repository_id = repo.id;
+        });
+
         await client.Contribution.bulkCreate(contributions);
 
         // Community Profile
@@ -87,7 +165,15 @@ async function init() {
           repo.name
         );
         await client.CommunityProfile.bulkCreate(profiles);
+
+        progress++;
+
+        repoProgress.update(progress);
       }
+
+      repoProgress.stop();
+
+      timePassed(start);
     }
   }
 
@@ -102,6 +188,7 @@ async function init() {
   exportClient.export();
 
   console.log('########  COMPLETE ########');
+  timePassed(start);
 }
 
 init();
