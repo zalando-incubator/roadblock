@@ -9,8 +9,11 @@ module.exports = class Issue extends Base {
     this.schema = {
       id: {
         type: Sequelize.BIGINT,
-        primaryKey: true
+        primaryKey: true,
+        autoincrement: true
       },
+
+      issue_id: Sequelize.BIGINT,
       title: Sequelize.STRING(600),
       state: Sequelize.STRING,
       url: Sequelize.STRING(600),
@@ -25,7 +28,7 @@ module.exports = class Issue extends Base {
     };
 
     this.map = {
-      id: 'id',
+      id: 'issue_id',
       title: 'title',
       state: 'state',
       url: 'url',
@@ -42,8 +45,13 @@ module.exports = class Issue extends Base {
     this.name = 'Issue';
   }
 
-  async getAll(orgName, repoName) {
-    return await this.ghClient.getIssues(orgName, repoName);
+  sync(force) {
+    this.model.belongsTo(this.dbClient.models.Repository);
+    super.sync(force);
+  }
+
+  async getAll(orgName, logger) {
+    return await this.ghClient.getIssues(orgName, logger);
   }
 
   async bulkCreate(issues) {

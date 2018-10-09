@@ -28,7 +28,7 @@ module.exports = class DatabaseClient {
               if (dv.login) message += dv.login;
               if (dv.title) message += dv.title;
             }
-            console.log(`     💾      ${message} `);
+            //console.log(`     💾      ${message} `);
           }
         }
       }

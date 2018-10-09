@@ -1,4 +1,5 @@
 const ghrequestor = require('ghrequestor');
+const cliProgress = require('cli-progress');
 
 module.exports = class GithubClient {
   constructor(token, baseUrl = 'https://api.github.com') {
@@ -110,16 +111,26 @@ module.exports = class GithubClient {
     return await this.requestorTemplate.getAll(this.api.commits(org, repo));
   }
 
-  async getIssues(org) {
-    try {
-      return await this.requestorTemplate.getAll(this.api.issues(org));
-    } catch (e) {
-      return new Error(e);
-    }
+  async getIssues(org, logger = null) {
+    var template = !logger
+      ? requestorTemplate
+      : ghrequestor.defaults({
+          headers: this.headers,
+          logger: logger
+        });
+
+    return await template.getAll(this.api.issues(org));
   }
 
-  async getMembers(org) {
-    return await this.requestorTemplate.getAll(this.api.members(org));
+  async getMembers(org, logger = null) {
+    var template = !logger
+      ? requestorTemplate
+      : ghrequestor.defaults({
+          headers: this.headers,
+          logger: logger
+        });
+
+    return await template.getAll(this.api.members(org));
   }
 
   async getCommunityProfile(org, repo) {
@@ -171,7 +182,7 @@ module.exports = class GithubClient {
       log ||
       ((level, message, data) => {
         if (data.target) {
-          console.log(`     ⬇️      Downloading ${data.target}`);
+          //console.log(`     ⬇️      Downloading ${data.target}`);
         }
       });
 

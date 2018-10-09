@@ -17,20 +17,7 @@ const sequelize = new Sequelize(
       acquire: 30000,
       idle: 10000
     },
-    storage: dbCfg.storage,
-    logging: (message, data) => {
-      if (data && data.type === 'INSERT') {
-        message = `Saving data to table: ${data.model.name} `;
-
-        if (data && data.instance && data.instance.dataValues) {
-          const dv = data.instance.dataValues;
-          if (dv.name) message += dv.name;
-          if (dv.login) message += dv.login;
-          if (dv.title) message += dv.title;
-        }
-        console.log(`     💾      ${message} `);
-      }
-    }
+    storage: dbCfg.storage
   }
 );
 
