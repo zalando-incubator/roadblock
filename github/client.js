@@ -29,6 +29,9 @@ module.exports = class GithubClient {
       issues: (org, filter = 'all', state = 'all') => {
         return `${this.url}/orgs/${org}/issues?filter=${filter}&state=${state}`;
       },
+      issuesForRepo: (org, repo, state = 'all') => {
+        return `${this.url}/repos/${org}/${repo}/issues?state=${state}`;
+      },
       members: org => {
         return `${this.url}/orgs/${org}/members`;
       },
@@ -112,15 +115,9 @@ module.exports = class GithubClient {
     return await this.requestorTemplate.getAll(this.api.commits(org, repo));
   }
 
-  async getIssues(org, logger = null) {
-    var template = !logger
-      ? requestorTemplate
-      : ghrequestor.defaults({
-          headers: this.headers,
-          logger: logger
-        });
-
-    return await template.getAll(this.api.issues(org));
+  async getIssues(org, repo = null) {
+    var url = repo ? this.api.issuesForRepo(org, repo) : this.api.issues(org);
+    return await this.requestorTemplate.getAll(url);
   }
 
   async getMembers(org, logger = null) {
