@@ -79,12 +79,11 @@ async function init() {
   var exportClient = new ExportClient(database, config.export);
 
   var start = performance.now();
-
   var orgs = await client.Organisation.getForUser();
 
   // Iterate through all orgs and collect members and repos
   for (let org of orgs) {
-    if ((orgs === '*' || orgs.indexOf(org.login)) && org.login !== 'umbraco') {
+    if (orgs === '*' || orgs.indexOf(org.login)) {
       console.log(` ⬇️  Downloading ${org.login}`);
 
       // Get the org details and save it
@@ -97,15 +96,6 @@ async function init() {
 
       console.log(` ✅  Saving ${reposInOrg.length} ${org.login} repositories`);
       reposInOrg = await client.Repository.bulkCreate(reposInOrg);
-
-      timePassed(start);
-
-      // Get all issues for the entire organisation
-      console.log(` ⬇️  Downloading ${org.login} issues`);
-      var issuesInOrg = await client.Issue.getAll(org.login, barlogger());
-
-      console.log(` ✅  Saving ${issuesInOrg.length} ${org.login} issues`);
-      await client.Issue.bulkCreate(issuesInOrg);
 
       timePassed(start);
 
@@ -130,52 +120,78 @@ async function init() {
       repoProgress.start(reposInOrg.length, 0);
       // For each repo we must collect repo-specific info
 
-      for (const repo of reposInOrg) {
-        try {
-          // Get Collaborators on the repo
-          var collaborators = await client.Collaborator.getAll(
+      for (const r of reposInOrg) {
+        var tasks = [];
+
+        tasks.push(async repo => {
+          try {
+            // Get Collaborators on the repo
+            var collaborators = await client.Collaborator.getAll(
+              org.login,
+              repo.name
+            );
+            client.Collaborator.bulkCreate(collaborators, repo.id);
+          } catch (e) {
+            console.warn(
+              'Failed getting Collaborators for ' + repo.name + ': ' + e
+            );
+          }
+        });
+
+        tasks.push(async repo => {
+          // Get PRs on each repo
+          var prs = await client.PullRequest.getAll(org.login, repo.name);
+          await client.PullRequest.bulkCreate(prs);
+        });
+
+        tasks.push(async repo => {
+          // Get All commits
+          var commits = await client.Commit.getAll(org.login, repo.name);
+          await client.Commit.bulkCreate(commits);
+        });
+
+        tasks.push(async repo => {
+          // Get All contributions
+          var contributions = await client.Contribution.getAll(
             org.login,
             repo.name
           );
-          await client.Collaborator.bulkCreate(collaborators, repo.id);
-        } catch (e) {
-          console.warn(
-            'Failed getting Collaborators for ' + repo.name + ': ' + e
-          );
-        }
-        // Get PRs on each repo
-        var prs = await client.PullRequest.getAll(org.login, repo.name);
-        await client.PullRequest.bulkCreate(prs);
+          contributions.map(contrib => {
+            contrib.repository_id = repo.id;
+          });
 
-        // Get All commits
-        var commits = await client.Commit.getAll(org.login, repo.name);
-        await client.Commit.bulkCreate(commits);
-
-        // Get All contributions
-        var contributions = await client.Contribution.getAll(
-          org.login,
-          repo.name
-        );
-        contributions.map(contrib => {
-          contrib.repository_id = repo.id;
+          await client.Contribution.bulkCreate(contributions);
         });
 
-        await client.Contribution.bulkCreate(contributions);
+        tasks.push(async repo => {
+          // Community Profile
+          var profiles = await client.CommunityProfile.getAll(
+            org.login,
+            repo.name
+          );
+          await client.CommunityProfile.bulkCreate(profiles);
+        });
 
-        // Community Profile
-        var profiles = await client.CommunityProfile.getAll(
-          org.login,
-          repo.name
-        );
-        await client.CommunityProfile.bulkCreate(profiles);
+        tasks.push(async repo => {
+          // Get All commits
+          var commits = await client.Commit.getAll(org.login, repo.name);
+          await client.Commit.bulkCreate(commits);
+        });
+
+        tasks.push(async repo => {
+          // Get All issues from the repo
+          var issues = await client.Issue.getAll(org.login, repo.name);
+          await client.Issue.bulkCreate(issues);
+        });
+
+        var awaitingTasks = tasks.map(async x => x(r));
+        await Promise.all(awaitingTasks);
 
         progress++;
-
         repoProgress.update(progress);
       }
 
       repoProgress.stop();
-
       timePassed(start);
     }
   }
