@@ -11,7 +11,7 @@ const config = {
   db: {
     database: 'roadblock',
     dialect: 'sqlite',
-    storage: './data/db2.sqlite'
+    storage: './data/db.sqlite'
   },
 
   export: {
