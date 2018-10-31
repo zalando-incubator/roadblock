@@ -26,13 +26,16 @@ These instructions will help you get a copy of the project up and running on you
 
 To run, you must have a Github token setup, you can setup a new token here: https://github.com/settings/tokens. Token needs access to **repo, read:org, read:user and user:email.**
 
+You can also pass in a list of orgs which it should specifically query, it will only attempt to 
+do so if the token gives the user access to this. 
+
 ```
 > Clone this project to your local machine
 
 > npm install
-> npm start [GITHUBTOKEN]
+> npm start [GITHUBTOKEN] [ORG,ORG]
 
-> script will now run between 10 and 20 minutes and store collected data in either the default SQLite database or in a PostgreSQL database you configure.
+> script will now run between 10 and 20 minutes and store collected data in either the default SQLite database or in a SQLite database you configure.
 ```
 
 ### Pre Requisites
@@ -40,7 +43,6 @@ To run, you must have a Github token setup, you can setup a new token here: http
 What software you need to install:
 
 - Node.js
-- PostgreSQL (optional)
 - [Metabase](https://www.metabase.com/) (optional) - to visualise the collected data
 
 ## Built With

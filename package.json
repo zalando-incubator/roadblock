@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/zalando/roadblock#readme",
   "dependencies": {
+    "cli-progress": "^2.1.0",
     "ghrequestor": "^0.1.7",
     "object-mapper": "^5.0.0",
     "sequelize": "^4.37.7",
