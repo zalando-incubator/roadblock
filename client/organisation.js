@@ -48,6 +48,7 @@ module.exports = class Organisation extends Base {
       through: 'MemberOrganisation'
     });
 
+    this.model.hasMany(this.dbClient.models.Repository, { as: 'Repositories' });
     super.sync(force);
   }
 

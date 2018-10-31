@@ -48,6 +48,10 @@ module.exports = class Repository extends Base {
 
   sync(force) {
     this.model.belongsTo(this.dbClient.models.Organisation);
+    this.model.belongsToMany(this.dbClient.models.Topic, {
+      through: 'RepositoryTopic'
+    });
+
     super.sync(force);
   }
 
