@@ -175,7 +175,7 @@ async function init() {
           await client.Issue.bulkCreate(issues);
         });
 
-        var awaitingTasks = tasks.map(async x => await x(r));
+        var awaitingTasks = tasks.map(async x => x(r));
         await Promise.all(awaitingTasks);
 
         progress++;
