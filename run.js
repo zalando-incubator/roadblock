@@ -57,15 +57,15 @@ const timePassed = function(startTime) {
 
 async function init() {
   var token = process.argv[2];
-  var orgs = process.argv[3];
-  var tasks = process.argv[4];
+  var orgsFilter = process.argv[3];
+  var tasksFilter = process.argv[4];
 
-  if (tasks && tasks !== '*') {
-    tasks = tasks.split(',');
+  if (tasksFilter && tasksFilter !== '*') {
+    tasksFilter = tasksFilter.split(',');
   }
 
-  if (orgs && orgs !== '*') {
-    orgs = orgs.split(',');
+  if (orgsFilter && orgsFilter !== '*') {
+    orgsFilter = orgsFilter.split(',');
   }
 
   if (!token) {
@@ -83,7 +83,7 @@ async function init() {
 
   // Iterate through all orgs and collect members and repos
   for (let org of orgs) {
-    if (orgs === '*' || orgs.indexOf(org.login)) {
+    if (orgs === '*' || orgsFilter.indexOf(org.login) >= 0) {
       console.log(` ⬇️  Downloading ${org.login}`);
 
       // Get the org details and save it
@@ -196,12 +196,16 @@ async function init() {
     }
   }
 
+  console.log(
+    ` ⬇️  Downloading external contribution data from external repositories`
+  );
   // Get all our external projects which we might contribute to
   await client.ExternalContribution.getAndStore(config.externalProjects);
 
   // Clean up external contributions so it is only those that fit our members
   await client.ExternalContribution.removeContributionsWithoutMembers();
 
+  console.log(` 💾  Exporting statistics as json to /data`);
   // Finally when everything has been saved to the Database,
   // extract json files with the full dataset
   exportClient.export();
