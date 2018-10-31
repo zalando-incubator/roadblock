@@ -23,7 +23,8 @@ module.exports = class Member extends Base {
       login: 'login'
     };
 
-    // this is still fairly lowlevel - if you need to instatiate this, the org client needs to be loaded
+    // this is still fairly lowlevel - if you need to instatiate this,
+    // the org client needs to be loaded
     // first, otherwise this will fail
     this.name = 'Member';
   }

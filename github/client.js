@@ -1,5 +1,4 @@
 const ghrequestor = require('ghrequestor');
-const cliProgress = require('cli-progress');
 
 module.exports = class GithubClient {
   constructor(token, baseUrl = 'https://api.github.com') {
@@ -122,7 +121,7 @@ module.exports = class GithubClient {
 
   async getMembers(org, logger = null) {
     var template = !logger
-      ? requestorTemplate
+      ? this.requestorTemplate
       : ghrequestor.defaults({
           headers: this.headers,
           logger: logger
@@ -176,13 +175,16 @@ module.exports = class GithubClient {
 
   logger({ log = null } = {}) {
     const result = {};
-    result.log =
-      log ||
-      ((level, message, data) => {
+
+    if (log) {
+      result.log = log;
+    } else {
+      result.log = (level, message, data) => {
         if (data.target) {
-          //console.log(`     ⬇️      Downloading ${data.target}`);
+          // console.debug(`     ⬇️      Downloading ${data.target}`);
         }
-      });
+      };
+    }
 
     return result;
   }

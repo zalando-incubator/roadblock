@@ -22,7 +22,7 @@ module.exports = class Base {
 
   // generic delete statement
   async destroy(where) {
-    return this.model.destroy(where);
+    return await this.model.destroy(where);
   }
 
   getSchema() {

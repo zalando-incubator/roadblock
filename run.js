@@ -23,11 +23,9 @@ const config = {
 
 const barlogger = function() {
   const result = {};
-
-  result.log = (level, message, data) => {
+  result.log = () => {
     process.stdout.write('.');
   };
-
   return result;
 };
 
@@ -39,19 +37,12 @@ const timePassed = function(startTime) {
     minutes = parseInt((duration / (1000 * 60)) % 60),
     hours = parseInt((duration / (1000 * 60 * 60)) % 24);
 
-  hours = hours < 10 ? '0' + hours : hours;
-  minutes = minutes < 10 ? '0' + minutes : minutes;
-  seconds = seconds < 10 ? '0' + seconds : seconds;
+  hours = hours < 10 ? `0${hours}` : hours;
+  minutes = minutes < 10 ? `0${minutes}` : minutes;
+  seconds = seconds < 10 ? `0${seconds}` : seconds;
 
   console.log(
-    ' ⏱  Time passed: ' +
-      hours +
-      ':' +
-      minutes +
-      ':' +
-      seconds +
-      '.' +
-      milliseconds
+    ` ⏱  Time passed: ${hours}:${minutes}:${seconds}.${milliseconds}`
   );
 };
 
@@ -133,7 +124,7 @@ async function init() {
             client.Collaborator.bulkCreate(collaborators, repo.id);
           } catch (e) {
             console.warn(
-              'Failed getting Collaborators for ' + repo.name + ': ' + e
+              `Failed getting Collaborators for ${repo.name} : ${e}`
             );
           }
         });
@@ -184,7 +175,7 @@ async function init() {
           await client.Issue.bulkCreate(issues);
         });
 
-        var awaitingTasks = tasks.map(async x => x(r));
+        var awaitingTasks = tasks.map(async x => await x(r));
         await Promise.all(awaitingTasks);
 
         progress++;
@@ -197,7 +188,7 @@ async function init() {
   }
 
   console.log(
-    ` ⬇️  Downloading external contribution data from external repositories`
+    ' ⬇️  Downloading external contribution data from external repositories'
   );
   // Get all our external projects which we might contribute to
   await client.ExternalContribution.getAndStore(config.externalProjects);
@@ -205,7 +196,7 @@ async function init() {
   // Clean up external contributions so it is only those that fit our members
   await client.ExternalContribution.removeContributionsWithoutMembers();
 
-  console.log(` 💾  Exporting statistics as json to /data`);
+  console.log(' 💾  Exporting statistics as json to /data');
   // Finally when everything has been saved to the Database,
   // extract json files with the full dataset
   exportClient.export();

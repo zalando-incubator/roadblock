@@ -9,13 +9,13 @@ function _getFileDate() {
 
 function saveToFile(data, folder, filename) {
   fs.writeFile(
-    folder + filename + '.json',
+    `${folder}${filename}.json`,
     JSON.stringify(data, null, 2),
     'utf8'
   );
 
   fs.writeFile(
-    folder + filename + '-' + _getFileDate() + '.json',
+    `${folder}${filename}-${_getFileDate()}.json`,
     JSON.stringify(data, null, 2),
     'utf8'
   );
@@ -33,12 +33,16 @@ module.exports = class ExportClient {
       limit: 100,
       order: Sequelize.literal('(forks+stars+watchers) DESC')
     });
-    repos = repos.map(x => x.dataValues);
+    repos = repos.map(x => {
+      return x.dataValues;
+    });
     saveToFile(repos, this.config.storage, 'repositories');
 
     // organisation stats
     var orgs = await this.database.models.Organisation.findAll();
-    orgs = orgs.map(x => x.dataValues);
+    orgs = orgs.map(x => {
+      return x.dataValues;
+    });
     saveToFile(orgs, this.config.storage, 'organisations');
 
     // general statistics
