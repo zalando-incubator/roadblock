@@ -1,6 +1,6 @@
 # Roadblock
 
-A Node.js application for pulling Github organisation statistics into a _SQLite / PostgreSQL_ database.
+A Node.js application for pulling Github organisation statistics into a _SQLite or PostgreSQL_ database.
 
 This project was built with simplicity and ease of use in mind. We simply wanted GitHub data in a relational database which we could then create visualisations for using Metabase (https://www.metabase.com/).
 
@@ -19,6 +19,8 @@ When Roadblock runs, it will collect:
 - Commits
 - Issues
 - Community Profiles
+- External contributions
+- Topics
 
 ## Getting Started
 
@@ -33,10 +35,25 @@ do so if the token gives the user access to this.
 > Clone this project to your local machine
 
 > npm install
-> npm start [GITHUBTOKEN] [ORG,ORG]
-
-> script will now run between 10 and 20 minutes and store collected data in either the default SQLite database or in a SQLite database you configure.
+> npm start [GITHUBTOKEN] [ORG,ORG] [TYPE,TYPE]
 ```
+
+- ORG can be left blank or can be a commaseperated string of orgs to index
+- TYPE can be left blank or be a commaseparated string of the following:
+  - members
+  - contributions
+  - pullrequests
+  - commits
+  - collaborators
+  - issues
+  - profiles
+
+Both ORG and TYPE can also use negative filters so "!topics,*" will collect all repository data except topics
+"!zalando,!stups,*" will go through all organisations that the profile have access to, except zalando and stups.
+
+> script will run between 10 and 20 minutes and store collected data in either the default SQLite database or in a SQLite database you configure.
+
+Database and json summaries will be stored in the /data folder
 
 ### Pre Requisites
 
