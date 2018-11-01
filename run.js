@@ -57,14 +57,10 @@ const timePassed = function(startTime) {
 
 async function init() {
   var token = process.argv[2];
-  var orgsFilter = process.argv[3];
-  var tasksFilter = process.argv[4];
 
-  if (tasksFilter && tasksFilter !== '*') {
     tasksFilter = tasksFilter.split(',');
   }
 
-  if (orgsFilter && orgsFilter !== '*') {
     orgsFilter = orgsFilter.split(',');
   }
 
@@ -84,6 +80,8 @@ async function init() {
   // Iterate through all orgs and collect members and repos
   for (let org of orgs) {
     if (runTask(org, orgsFilter)) {
+=======
+>>>>>>> bc6446e95123c7d6a6ddf556aff3de1bfb94ee03
       console.log(` ⬇️  Downloading ${org.login}`);
 
       // Get the org details and save it
