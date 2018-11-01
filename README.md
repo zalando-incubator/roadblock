@@ -47,6 +47,7 @@ do so if the token gives the user access to this.
   - collaborators
   - issues
   - profiles
+  - upstream
 
 Both ORG and TYPE can also use negative filters so "!topics,*" will collect all repository data except topics
 "!zalando,!stups,*" will go through all organisations that the profile have access to, except zalando and stups.

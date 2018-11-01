@@ -18,7 +18,7 @@ const config = {
     storage: './data/'
   },
 
-  externalProjects: require('./config/tech-radar.js')
+  externalProjects: require('./config/upstream.js')
 };
 
 const barlogger = function() {
