@@ -2,9 +2,9 @@
   "name": "roadblock",
   "version": "1.0.0",
   "description": "node.js app to collect github data",
-  "main": "index.js",
+  "main": "run.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node run.js",
     "test": "eslint ."
   },
   "repository": {
@@ -12,12 +12,13 @@
     "url": "git+https://github.com/zalando/roadblock.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/zalando/roadblock/issues"
   },
   "homepage": "https://github.com/zalando/roadblock#readme",
   "dependencies": {
+    "cli-progress": "^2.1.0",
     "ghrequestor": "^0.1.7",
     "object-mapper": "^5.0.0",
     "sequelize": "^4.37.7",
