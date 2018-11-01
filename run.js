@@ -220,11 +220,14 @@ async function init() {
   console.log(
     ' ⬇️  Downloading external contribution data from external repositories'
   );
-  // Get all our external projects which we might contribute to
-  await client.ExternalContribution.getAndStore(config.externalProjects);
 
-  // Clean up external contributions so it is only those that fit our members
-  await client.ExternalContribution.removeContributionsWithoutMembers();
+  if (runTask('upstream', tasksFilter)) {
+    // Get all our external projects which we might contribute to
+    await client.ExternalContribution.getAndStore(config.externalProjects);
+
+    // Clean up external contributions so it is only those that fit our members
+    await client.ExternalContribution.removeContributionsWithoutMembers();
+  }
 
   console.log(' 💾  Exporting statistics as json to /data');
   // Finally when everything has been saved to the Database,
