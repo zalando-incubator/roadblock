@@ -9,6 +9,7 @@ const Contribution = require('./contribution.js');
 const Issue = require('./issue.js');
 const CommunityProfile = require('./communityprofile.js');
 const ExternalContribution = require('./externalcontribution.js');
+const Topic = require('./topic.js');
 
 module.exports = function(github, database, reset = false) {
   var s = {};
@@ -44,6 +45,9 @@ module.exports = function(github, database, reset = false) {
   s.ExternalContribution = new ExternalContribution(github, database);
   s.ExternalContribution.define();
 
+  s.Topic = new Topic(github, database);
+  s.Topic.define();
+
   // finally sync the database so all schemas are in place
   s.Repository.sync(reset);
   s.Member.sync(reset);
@@ -54,8 +58,8 @@ module.exports = function(github, database, reset = false) {
   s.Contribution.sync(reset);
   s.Issue.sync(reset);
   s.ExternalContribution.sync(reset);
+  s.Topic.sync(reset);
 
   database.sync({ force: reset });
-
   return s;
 };

@@ -49,6 +49,11 @@ module.exports = class GithubClient {
       contributorsForRepo: (org, repo) => {
         return `${this.url}/repos/${org}/${repo}/contributors`;
       },
+
+      topicsForRepo: (org, repo) => {
+        return `${this.url}/repos/${org}/${repo}/topics`;
+      },
+
       memberEvents: member => {
         return `${this.url}/users/${member}/events/public`;
       }
@@ -64,8 +69,17 @@ module.exports = class GithubClient {
       ...this.headers,
       accept: 'application/vnd.github.black-panther-preview+json'
     };
+
     this.requestorTemplatePreview = ghrequestor.defaults({
       headers: this.previewHeaders,
+      logger: this.logger()
+    });
+
+    this.requestorTemplateTopicPreview = ghrequestor.defaults({
+      headers: {
+        ...this.headers,
+        accept: 'application/vnd.github.mercy-preview+json'
+      },
       logger: this.logger()
     });
   }
@@ -107,6 +121,12 @@ module.exports = class GithubClient {
   async getPullRequests(org, repo) {
     return await this.requestorTemplate.getAll(
       this.api.pullRequests(org, repo)
+    );
+  }
+
+  async getTopics(org, repo) {
+    return await this.requestorTemplateTopicPreview.getAll(
+      this.api.topicsForRepo(org, repo)
     );
   }
 
