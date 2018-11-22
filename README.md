@@ -1,5 +1,7 @@
 # Roadblock
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/zalando-incubator/roadblock.svg)](https://greenkeeper.io/)
+
 A Node.js application for pulling Github organisation statistics into a _SQLite or PostgreSQL_ database.
 
 This project was built with simplicity and ease of use in mind. We simply wanted GitHub data in a relational database which we could then create visualisations for using Metabase (https://www.metabase.com/).
