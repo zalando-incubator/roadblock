@@ -37,17 +37,4 @@ module.exports = class Collaborator extends Base {
   async getAll(orgName, repoName) {
     return await this.ghClient.getCollaborators(orgName, repoName);
   }
-
-  async bulkCreate(collaborators, repoId) {
-    const dbCollabs = helper.mapArray(collaborators, this.map);
-    const dbCollaboratorsWithRepo = dbCollabs.map(x => {
-      return {
-        ...x,
-        repository_id: repoId
-      };
-    });
-
-    await this.model.bulkCreate(dbCollaboratorsWithRepo);
-    return dbCollaboratorsWithRepo;
-  }
 };
