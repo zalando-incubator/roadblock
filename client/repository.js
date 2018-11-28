@@ -39,7 +39,7 @@ module.exports = class Repository extends Base {
       forks_count: 'forks',
       stargazers_count: 'stars',
       open_issues_count: 'open_issues',
-      watchers_count: 'watchers',
+      subscribers_count: 'watchers',
       'owner.id': 'organisation_id'
     };
 
@@ -48,6 +48,7 @@ module.exports = class Repository extends Base {
 
   sync(force) {
     this.model.belongsTo(this.dbClient.models.Organisation);
+    this.model.hasMany(this.dbClient.models.Release);
     this.model.belongsToMany(this.dbClient.models.Topic, {
       through: 'RepositoryTopic'
     });
@@ -57,20 +58,5 @@ module.exports = class Repository extends Base {
 
   async getAll(orgName) {
     return await this.ghClient.getRepos(orgName);
-  }
-
-  async saveOrUpdate(repository) {
-    const dbRepo = mapper(repository, this.map);
-    await this.model.upsert(dbRepo);
-    return dbRepo;
-  }
-
-  async bulkCreate(repositories) {
-    const dbRepos = helper.mapArray(repositories, this.map).filter(y => {
-      return !y.fork;
-    });
-
-    await this.model.bulkCreate(dbRepos);
-    return dbRepos;
   }
 };

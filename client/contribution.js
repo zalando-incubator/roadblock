@@ -15,7 +15,8 @@ module.exports = class Contribution extends Base {
     this.map = {
       id: 'user_id',
       contributions: 'total',
-      login: 'login'
+      login: 'login',
+      repository_id: 'repository_id'
     };
 
     this.name = 'Contribution';
@@ -28,11 +29,5 @@ module.exports = class Contribution extends Base {
 
   async getAll(orgName, repoName) {
     return await this.ghClient.getContributions(orgName, repoName);
-  }
-
-  async bulkCreate(contributions) {
-    const dbContributions = helper.mapArray(contributions, this.map);
-    await this.model.bulkCreate(dbContributions);
-    return dbContributions;
   }
 };
