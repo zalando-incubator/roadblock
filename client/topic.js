@@ -20,7 +20,11 @@ module.exports = class Topic extends Base {
   }
 
   async getAll(orgName, repoName) {
-    return await this.ghClient.getTopics(orgName, repoName);
+    var result = await this.ghClient.getTopics(orgName, repoName);
+
+    if (result[0] && result[0].names) return result[0].names;
+
+    return [];
   }
 
   async saveOrUpdate(topicName, repository) {
@@ -38,10 +42,8 @@ module.exports = class Topic extends Base {
   }
 
   async bulkCreate(topics, repository) {
-    if (topics[0] && topics[0].names) {
-      for (const topic of topics[0].names) {
-        await this.saveOrUpdate(topic, repository);
-      }
+    for (const topic of topics) {
+      await this.saveOrUpdate(topic, repository);
     }
   }
 };

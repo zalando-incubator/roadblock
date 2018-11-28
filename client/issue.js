@@ -10,7 +10,7 @@ module.exports = class Issue extends Base {
       id: {
         type: Sequelize.BIGINT,
         primaryKey: true,
-        autoincrement: true
+        autoIncrement: true
       },
 
       issue_id: Sequelize.BIGINT,
@@ -23,8 +23,7 @@ module.exports = class Issue extends Base {
       updated_at: Sequelize.DATE,
       comments: Sequelize.INTEGER,
       created_at: Sequelize.DATE,
-      pull_request: Sequelize.STRING(400),
-      repository_id: Sequelize.BIGINT
+      pull_request: Sequelize.STRING(400)
     };
 
     this.map = {
@@ -38,7 +37,7 @@ module.exports = class Issue extends Base {
       updated_at: 'updated_at',
       created_at: 'created_at',
       comments: 'comments',
-      'repository.id': 'repository_id',
+      repository_id: 'repository_id',
       'pull_request.html_url': 'pull_request'
     };
 
@@ -52,11 +51,5 @@ module.exports = class Issue extends Base {
 
   async getAll(orgName, logger) {
     return await this.ghClient.getIssues(orgName, logger);
-  }
-
-  async bulkCreate(issues) {
-    const dbIssues = helper.mapArray(issues, this.map);
-    await this.model.bulkCreate(dbIssues);
-    return dbIssues;
   }
 };
