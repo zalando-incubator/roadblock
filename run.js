@@ -5,6 +5,7 @@ const Client = require('./client');
 const ExportClient = require('./export/client.js');
 const cliProgress = require('cli-progress');
 const { performance } = require('perf_hooks');
+const commandLineArgs = require('command-line-args');
 
 // temporary config object - we will remove later
 const config = {
@@ -21,6 +22,12 @@ const config = {
   externalProjects: require('./config/upstream.js')
 };
 
+const optionDefinitions = [
+  { name: 'orgs', type: String, multiple: true, defaultValue: ['*'] },
+  { name: 'token', alias: 't', type: String, defaultOption: true },
+  { name: 'tasks', type: String, multiple: true, defaultValue: ['*'] }
+];
+
 const barlogger = function() {
   const result = {};
   result.log = () => {
@@ -30,7 +37,6 @@ const barlogger = function() {
 };
 
 const runTask = function(task, filter) {
-  if (!filter || filter === '') return true;
   if (filter.indexOf(`!${task}`) > -1) return false;
   if (filter === '*' || filter.indexOf('*') > -1 || filter.indexOf(task) > -1)
     return true;
@@ -56,24 +62,14 @@ const timePassed = function(startTime) {
 };
 
 async function init() {
-  var token = process.argv[2];
-  var orgsFilter = process.argv[3] || '*';
-  var tasksFilter = process.argv[4] || '*';
+  const options = commandLineArgs(optionDefinitions);
 
-  if (tasksFilter !== '*') {
-    tasksFilter = tasksFilter.split(',');
-  }
-
-  if (orgsFilter !== '*') {
-    orgsFilter = orgsFilter.split(',');
-  }
-
-  if (!token) {
+  if (!options.token) {
     throw 'Github token argument is empty, please provide a token. `node run.js <token>`';
   }
 
   // Initialize the github and database clients
-  var github = new GithubClient(token);
+  var github = new GithubClient(options.token);
   var database = await new DatabaseClient(config.db).db();
   var client = Client(github, database, true);
   var exportClient = new ExportClient(database, config.export);
@@ -83,7 +79,7 @@ async function init() {
 
   // Iterate through all orgs and collect members and repos
   for (let org of orgs) {
-    if (runTask(org, orgsFilter)) {
+    if (runTask(org.login, options.orgs)) {
       console.log(` ⬇️  Downloading ${org.login}`);
 
       // Get the org details and save it
@@ -100,9 +96,13 @@ async function init() {
       await client.Repository.bulkCreate(githubRepositories);
 
       var repositories = await org.getRepositories();
+      repositories = repositories.filter(y => {
+        return !y.fork;
+      });
+
       timePassed(start);
 
-      if (runTask('members', tasksFilter)) {
+      if (runTask('members', options.tasks)) {
         // Get all members in the org and save them
         console.log(` ⬇️  Downloading ${org.login} members`);
         var membersInOrg = await client.Member.getAll(org.login, barlogger());
@@ -127,8 +127,9 @@ async function init() {
 
       for (const repository of repositories) {
         var tasks = [];
+        var externalValuesMap = { repository_id: repository.id };
 
-        if (runTask('collaborators', tasksFilter)) {
+        if (runTask('collaborators', options.tasks)) {
           tasks.push(async repo => {
             try {
               // Get Collaborators on the repo
@@ -136,7 +137,8 @@ async function init() {
                 org.login,
                 repo.dataValues.name
               );
-              client.Collaborator.bulkCreate(collaborators, repo.dataValues.id);
+
+              client.Collaborator.bulkCreate(collaborators, externalValuesMap);
             } catch (e) {
               console.warn(
                 `Failed getting Collaborators for ${
@@ -147,7 +149,7 @@ async function init() {
           });
         }
 
-        if (runTask('topics', tasksFilter)) {
+        if (runTask('topics', options.tasks)) {
           tasks.push(async repo => {
             // Get Topics on each repo - save it directly on the repository model
             var topics = await client.Topic.getAll(org.login, repo.name);
@@ -155,7 +157,7 @@ async function init() {
           });
         }
 
-        if (runTask('pullrequests', tasksFilter)) {
+        if (runTask('pullrequests', options.tasks)) {
           tasks.push(async repo => {
             // Get PRs on each repo
             var prs = await client.PullRequest.getAll(org.login, repo.name);
@@ -163,45 +165,56 @@ async function init() {
           });
         }
 
-        if (runTask('commits', tasksFilter)) {
+        if (runTask('releases', options.tasks)) {
           tasks.push(async repo => {
-            // Get All commits
-            var commits = await client.Commit.getAll(org.login, repo.name);
-            await client.Commit.bulkCreate(commits);
+            // Get release history on each repo
+            var releases = await client.Release.getAll(org.login, repo.name);
+            await client.Release.bulkCreate(releases, externalValuesMap);
           });
         }
 
-        if (runTask('contributions', tasksFilter)) {
+        if (runTask('commits', options.tasks)) {
+          tasks.push(async repo => {
+            // Get All commits
+            var commits = await client.Commit.getAll(org.login, repo.name);
+            await client.Commit.bulkCreate(commits, externalValuesMap);
+          });
+        }
+
+        if (runTask('contributions', options.tasks)) {
           tasks.push(async repo => {
             // Get All contributions
             var contributions = await client.Contribution.getAll(
               org.login,
               repo.name
             );
-            contributions.map(contrib => {
-              contrib.repository_id = repo.id;
-            });
 
-            await client.Contribution.bulkCreate(contributions);
+            await client.Contribution.bulkCreate(
+              contributions,
+              externalValuesMap
+            );
           });
         }
 
-        if (runTask('profiles', tasksFilter)) {
+        if (runTask('profiles', options.tasks)) {
           tasks.push(async repo => {
             // Community Profile
             var profiles = await client.CommunityProfile.getAll(
               org.login,
               repo.name
             );
-            await client.CommunityProfile.bulkCreate(profiles);
+            await client.CommunityProfile.bulkCreate(
+              profiles,
+              externalValuesMap
+            );
           });
         }
 
-        if (runTask('issues', tasksFilter)) {
+        if (runTask('issues', options.tasks)) {
           tasks.push(async repo => {
             // Get All issues from the repo
             var issues = await client.Issue.getAll(org.login, repo.name);
-            await client.Issue.bulkCreate(issues);
+            await client.Issue.bulkCreate(issues, externalValuesMap);
           });
         }
 
@@ -221,7 +234,7 @@ async function init() {
     ' ⬇️  Downloading external contribution data from external repositories'
   );
 
-  if (runTask('upstream', tasksFilter)) {
+  if (runTask('upstream', options.tasks)) {
     // Get all our external projects which we might contribute to
     await client.ExternalContribution.getAndStore(config.externalProjects);
 
