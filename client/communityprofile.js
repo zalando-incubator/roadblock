@@ -1,6 +1,7 @@
 const Base = require('./base.js');
 const Sequelize = require('sequelize');
 const helper = require('./helper.js');
+const rp = require('request-promise');
 
 module.exports = class CommunityProfile extends Base {
   constructor(githubClient, databaseClient) {
@@ -9,7 +10,8 @@ module.exports = class CommunityProfile extends Base {
     this.schema = {
       id: {
         type: Sequelize.BIGINT,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
       },
       health_percentage: Sequelize.INTEGER,
       description: Sequelize.STRING,
@@ -19,50 +21,89 @@ module.exports = class CommunityProfile extends Base {
       issue_template: Sequelize.BOOLEAN,
       pull_request_template: Sequelize.BOOLEAN,
       readme: Sequelize.BOOLEAN,
-      license: Sequelize.STRING
+      license: Sequelize.STRING,
+      contributing_file: Sequelize.BOOLEAN,
+      security_file: Sequelize.BOOLEAN,
+      codeowners_file: Sequelize.BOOLEAN,
+      maintainers_file: Sequelize.BOOLEAN,
+      zappr_file: Sequelize.BOOLEAN,
+      zappr_status_check: Sequelize.BOOLEAN,
+      required_reviewers: Sequelize.BOOLEAN,
+      require_codeowners: Sequelize.BOOLEAN,
+      protected_master: Sequelize.BOOLEAN,
+      enforce_admins: Sequelize.BOOLEAN
     };
 
     this.map = {
       id: 'id',
-      health_percentage: 'health_percentage',
-      description: 'description',
-      documentation: 'documentation',
-      'files.code_of_conduct': {
+      'community.health_percentage': 'health_percentage',
+      'community.description': 'description',
+      'community.documentation': 'documentation',
+      'community.repository_id': 'repository_id',
+      'community.files.code_of_conduct': {
         key: 'code_of_conduct',
         transform: file => {
           return file ? true : false;
         }
       },
-      'files.contributing': {
+      'community.files.contributing': {
         key: 'contributing',
         transform: file => {
           return file ? true : false;
         }
       },
-      'files.issue_template': {
+      'community.files.issue_template': {
         key: 'issue_template',
         transform: file => {
           return file ? true : false;
         }
       },
-      'files.pull_request_template': {
+      'community.files.pull_request_template': {
         key: 'pull_request_template',
         transform: file => {
           return file ? true : false;
         }
       },
-      'files.readme': {
+      'community.files.readme': {
         key: 'readme',
         transform: file => {
           return file ? true : false;
         }
       },
-      'files.license': {
+      'community.files.license': {
         key: 'license',
         transform: file => {
           return file ? file.name : '';
         }
-      }
+      },
+
+      'branchProtection.required_pull_request_reviews.required_approving_review_count':
+        'required_reviewers',
+      'branchProtection.required_pull_request_reviews.require_code_owner_reviews':
+        'require_codeowners',
+      'branchProtection.enforce_admins.enabled': 'enforce_admins',
+
+      branchProtection: {
+        key: 'protected_master',
+        transform: protection => {
+          return protection ? true : false;
+        }
+      },
+
+      'branchProtection.required_status_checks': {
+        key: 'zappr_status_check',
+        transform: checks => {
+          if (!checks || !checks.contexts) return false;
+
+          return checks.contexts.indexOf('zappr') >= 0;
+        }
+      },
+
+      'files.security': 'security_file',
+      'files.contributing': 'contributing_file',
+      'files.zappr': 'zappr_file',
+      'files.codeowners': 'codeowners_file',
+      'files.maintainers': 'maintainers_file'
     };
 
     this.name = 'CommunityProfile';
@@ -73,13 +114,80 @@ module.exports = class CommunityProfile extends Base {
     super.sync(force);
   }
 
-  async getAll(orgName, repoName) {
-    return await this.ghClient.getCommunityProfile(orgName, repoName);
+  checkFileExists(org, repo, path) {
+    var gh_url =
+      'https://raw.githubusercontent.com/' +
+      org +
+      '/' +
+      repo +
+      '/master/' +
+      path;
+    var options = {
+      method: 'HEAD',
+      host: url.parse(gh_url).host,
+      port: 80,
+      path: url.parse(gh_url).pathname
+    };
+    var req = http.request(options, function(r) {
+      callback(r.statusCode == 200);
+    });
+    req.end();
   }
 
-  async bulkCreate(communityProfiles) {
-    const dbCommunityProfiles = helper.mapArray(communityProfiles, this.map);
-    await this.model.bulkCreate(dbCommunityProfiles);
-    return dbCommunityProfiles;
+  async urlExists(url) {
+    const options = {
+      uri: url,
+      resolveWithFullResponse: true
+    };
+
+    try {
+      const res = await rp(options);
+      return /^(?!4)\d\d/.test(res.statusCode);
+    } catch (err) {
+      return false;
+    }
+  }
+
+  async getAll(orgName, repoName) {
+    var community = await this.ghClient.getCommunityProfile(orgName, repoName);
+    var branchProtection = await this.ghClient.getBranchProtection(
+      orgName,
+      repoName,
+      'master'
+    );
+
+    var filesBaseUrl =
+      'https://raw.githubusercontent.com/' +
+      orgName +
+      '/' +
+      repoName +
+      '/master/';
+
+    var files = {};
+    files.zappr = await this.urlExists(filesBaseUrl + '.zappr.yaml');
+
+    files.contributing = await this.urlExists(filesBaseUrl + 'CONTRUBUTING.md');
+    if (!files.contributing) {
+      files.contributing = await this.urlExists(
+        filesBaseUrl + 'CONTRUBUTING.rst'
+      );
+    }
+
+    files.security = await this.urlExists(filesBaseUrl + 'SECURITY.md');
+    if (!files.security) {
+      files.security = await this.urlExists(filesBaseUrl + 'SECURITY.rst');
+    }
+
+    files.codeowners = await this.urlExists(
+      filesBaseUrl + '.github/CODEOWNERS'
+    );
+
+    files.maintainers = await this.urlExists(filesBaseUrl + 'MAINTAINERS');
+
+    return {
+      community,
+      branchProtection,
+      files
+    };
   }
 };
