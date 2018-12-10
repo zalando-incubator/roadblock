@@ -39,7 +39,7 @@ module.exports = class Repository extends Base {
       forks_count: 'forks',
       stargazers_count: 'stars',
       open_issues_count: 'open_issues',
-      subscribers_count: 'watchers',
+      watchers_count: 'watchers',
       'owner.id': 'organisation_id'
     };
 
@@ -49,6 +49,8 @@ module.exports = class Repository extends Base {
   sync(force) {
     this.model.belongsTo(this.dbClient.models.Organisation);
     this.model.hasMany(this.dbClient.models.Release);
+    this.model.hasMany(this.dbClient.models.Contribution);
+
     this.model.belongsToMany(this.dbClient.models.Topic, {
       through: 'RepositoryTopic'
     });
