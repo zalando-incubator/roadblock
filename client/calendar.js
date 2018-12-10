@@ -15,8 +15,10 @@ module.exports = class Calendar extends Base {
 
   sync(force) {
     super.sync(force);
+  }
 
-    var date = new Date(2014, 0, 1);
+  async getAll(year = 2014) {
+    var date = new Date(year, 0, 1);
     var end = new Date().getFullYear();
 
     var months = [];
@@ -26,6 +28,6 @@ module.exports = class Calendar extends Base {
       date.setMonth(date.getMonth() + 1);
     }
 
-    this.model.bulkCreate(months);
+    return months;
   }
 };

@@ -29,7 +29,9 @@ module.exports = class Base {
   }
 
   async bulkCreate(valArray, externalValues) {
-    const dbValArray = helper.mapArray(valArray, this.map, externalValues);
+    const dbValArray = this.map
+      ? helper.mapArray(valArray, this.map, externalValues)
+      : valArray;
     await this.model.bulkCreate(dbValArray);
     return dbValArray;
   }

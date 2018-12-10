@@ -76,6 +76,8 @@ async function init() {
 
   var start = performance.now();
   var orgs = await client.Organisation.getForUser();
+  var months = await client.Calendar.getAll(2014);
+  await client.Calendar.bulkCreate(months);
 
   // Iterate through all orgs and collect members and repos
   for (let org of orgs) {
