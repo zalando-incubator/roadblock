@@ -13,7 +13,15 @@ module.exports = class Member extends Base {
       },
       avatar: Sequelize.STRING(400),
       login: Sequelize.STRING(100),
-      url: Sequelize.STRING
+      url: Sequelize.STRING,
+
+      employee_id: Sequelize.BIGINT,
+      employee_login: Sequelize.STRING,
+      employee_title: Sequelize.STRING,
+      name: Sequelize.STRING,
+      email: Sequelize.STRING,
+      department: Sequelize.STRING,
+      team: Sequelize.STRING
     };
 
     this.map = {
