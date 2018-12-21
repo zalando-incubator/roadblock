@@ -114,26 +114,6 @@ module.exports = class CommunityProfile extends Base {
     super.sync(force);
   }
 
-  checkFileExists(org, repo, path) {
-    var gh_url =
-      'https://raw.githubusercontent.com/' +
-      org +
-      '/' +
-      repo +
-      '/master/' +
-      path;
-    var options = {
-      method: 'HEAD',
-      host: url.parse(gh_url).host,
-      port: 80,
-      path: url.parse(gh_url).pathname
-    };
-    var req = http.request(options, function(r) {
-      callback(r.statusCode == 200);
-    });
-    req.end();
-  }
-
   async urlExists(url) {
     const options = {
       uri: url,
