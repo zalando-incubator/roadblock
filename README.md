@@ -50,6 +50,11 @@ You can specify which tasks to run as part of the data collection:
   - `profiles`
   - `upstream`
 
+You can specify the api endpoint for usage with a github enterprise instance
+
+```
+> npm start GITHUBTOKEN --url https://api.github.bus.zalan.do
+
 ### Negative filters
 Both --orgs and --tasks can also use negative filters so `!topics *` will collect all repository data except topics
 
