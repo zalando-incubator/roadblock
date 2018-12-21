@@ -25,7 +25,8 @@ const config = {
 const optionDefinitions = [
   { name: 'orgs', type: String, multiple: true, defaultValue: ['*'] },
   { name: 'token', alias: 't', type: String, defaultOption: true },
-  { name: 'tasks', type: String, multiple: true, defaultValue: ['*'] }
+  { name: 'tasks', type: String, multiple: true, defaultValue: ['*'] },
+  { name: 'url', type: String, defaultValue: 'https://api.github.com' }
 ];
 
 const barlogger = function() {
@@ -69,7 +70,7 @@ async function init() {
   }
 
   // Initialize the github and database clients
-  var github = new GithubClient(options.token);
+  var github = new GithubClient(options.token, options.url);
   var database = await new DatabaseClient(config.db).db();
   var client = Client(github, database, true);
   var exportClient = new ExportClient(database, config.export);
@@ -232,11 +233,14 @@ async function init() {
     }
   }
 
-  console.log(
-    ' ⬇️  Downloading external contribution data from external repositories'
-  );
+  if (
+    options.url === 'https://api.github.com' &&
+    runTask('upstream', options.tasks)
+  ) {
+    console.log(
+      ' ⬇️  Downloading external contribution data from external repositories'
+    );
 
-  if (runTask('upstream', options.tasks)) {
     // Get all our external projects which we might contribute to
     await client.ExternalContribution.getAndStore(config.externalProjects);
 
@@ -244,10 +248,12 @@ async function init() {
     await client.ExternalContribution.removeContributionsWithoutMembers();
   }
 
-  console.log(' 💾  Exporting statistics as json to /data');
-  // Finally when everything has been saved to the Database,
-  // extract json files with the full dataset
-  exportClient.export();
+  if (runTask('export', options.tasks)) {
+    console.log(' 💾  Exporting statistics as json to /data');
+    // Finally when everything has been saved to the Database,
+    // extract json files with the full dataset
+    exportClient.export();
+  }
 
   console.log('########  COMPLETE ########');
   timePassed(start);
