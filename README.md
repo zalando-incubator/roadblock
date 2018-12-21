@@ -53,7 +53,7 @@ You can specify which tasks to run as part of the data collection:
 You can specify the api endpoint for usage with a github enterprise instance
 
 ```
-> npm start GITHUBTOKEN --url https://api.github.bus.zalan.do
+> npm start GITHUBTOKEN --url https://api.github.whatev.er
 ```
 
 ### Negative filters
