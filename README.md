@@ -23,7 +23,7 @@ do so if the token gives the user access to this.
 
 > Run npm install and start collecting data
 > npm install
-> npm start GITHUBTOKEN
+> npm start -- GITHUBTOKEN --orgs COMPANY --tasks TASK TASK TASK
 ```
 
 ### Filter organisations and tasks
