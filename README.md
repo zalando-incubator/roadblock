@@ -31,13 +31,13 @@ do so if the token gives the user access to this.
 You specify the specific organisations you want to crawl, if left empty it will crawl all orgs the token have access to:
 
 ```
-> npm start GITHUBTOKEN --orgs zalando stups 
+> npm start --  GITHUBTOKEN --orgs zalando stups 
 ```
 
 You can specify which tasks to run as part of the data collection:
 
 ```
-> npm start GITHUBTOKEN --tasks members commits 
+> npm start --  GITHUBTOKEN --tasks members commits 
 ```
 
 `--tasks` can be left blank or be a string of the following:
@@ -53,7 +53,7 @@ You can specify which tasks to run as part of the data collection:
 You can specify the api endpoint for usage with a github enterprise instance
 
 ```
-> npm start GITHUBTOKEN --url https://api.github.whatev.er
+> npm start -- GITHUBTOKEN --url https://api.github.whatev.er
 ```
 
 ### Negative filters
