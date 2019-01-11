@@ -7,8 +7,16 @@ const cliProgress = require('cli-progress');
 const { performance } = require('perf_hooks');
 const commandLineArgs = require('command-line-args');
 
-// temporary config object - we will remove later
 const config = {
+  github: {
+    token: '',
+    url: 'https://api.github.com'
+  },
+
+  ztoken: '',
+  tasks: ['*'],
+  orgs: ['*'],
+
   db: {
     database: 'roadblock',
     dialect: 'sqlite',

@@ -65,6 +65,10 @@ module.exports = class GithubClient {
 
       memberEvents: member => {
         return `${this.url}/users/${member}/events/public`;
+      },
+
+      memberRepositories: member => {
+        return `${this.url}/users/${member}/repos?type=owner`;
       }
     };
 
@@ -128,6 +132,13 @@ module.exports = class GithubClient {
   async getOrgsForUser() {
     const response = await this.requestorTemplate.get(
       this.api.userOrganisations
+    );
+    return response.body;
+  }
+
+  async getReposForUser(member) {
+    const response = await this.requestorTemplate.get(
+      this.api.memberRepositories(member)
     );
     return response.body;
   }

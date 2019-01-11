@@ -7,6 +7,9 @@
     "start": "node run.js",
     "test": "eslint ."
   },
+  "bin": {
+    "roadblock": "./cli.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zalando/roadblock.git"
@@ -20,6 +23,7 @@
   "dependencies": {
     "cli-progress": "^2.1.0",
     "command-line-args": "^5.0.2",
+    "dottie": "^2.0.1",
     "ghrequestor": "^0.1.7",
     "node-fetch": "^2.3.0",
     "object-mapper": "^5.0.0",
