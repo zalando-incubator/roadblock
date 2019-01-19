@@ -48,7 +48,14 @@ async function run(config) {
   context.start = performance.now();
   context.github = new GithubClient(config.github.token, config.github.url);
   context.database = await new DatabaseClient(config.db).db();
-  context.client = Client(context.github, context.database, true);
+
+  var externalClients = util.getClients().map(x => require(x));
+  context.client = Client(
+    context.github,
+    context.database,
+    true,
+    externalClients
+  );
   context.exportClient = new ExportClient(context.database, config.export);
 
   // pre-process - setup calendar and orgs

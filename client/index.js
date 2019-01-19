@@ -13,7 +13,7 @@ const Topic = require('./topic.js');
 const Release = require('./release.js');
 const Calendar = require('./calendar.js');
 
-module.exports = function(github, database, reset = false) {
+module.exports = function(github, database, reset = false, externalTypes = []) {
   var s = {};
 
   //Setup helper calendar table for grouping activity based on months
@@ -57,6 +57,16 @@ module.exports = function(github, database, reset = false) {
   s.Release = new Release(github, database);
   s.Release.define();
 
+  for (const client of externalTypes) {
+    try {
+      var cl = new client(github, database);
+      s[client.name] = cl;
+      s[client.name].define();
+    } catch (ex) {
+      console.log(ex);
+    }
+  }
+
   // finally sync the database so all schemas are in place
   s.Calendar.sync(reset);
 
@@ -72,6 +82,12 @@ module.exports = function(github, database, reset = false) {
   s.ExternalContribution.sync(reset);
   s.Topic.sync(reset);
   s.Release.sync(reset);
+
+  for (const client of externalTypes) {
+    try {
+      s[client.name].sync(reset);
+    } catch (ex) {}
+  }
 
   database.sync({ force: reset });
   return s;

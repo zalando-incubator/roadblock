@@ -67,6 +67,19 @@ var getTasks = function(dir, filter) {
   return tasks;
 };
 
+var getClients = function() {
+  var tasks = [];
+  var localPath = process.cwd() + '/client/';
+
+  if (fs.existsSync(localPath)) {
+    for (const file of fs.readdirSync(localPath)) {
+      tasks.push(localPath + file);
+    }
+  }
+
+  return tasks;
+};
+
 const minimalConfig = {
   github: {
     token: ''
@@ -104,6 +117,7 @@ module.exports = {
   barlogger,
   runTask,
   getTasks,
+  getClients,
   timePassed,
   defaultConfig,
   minimalConfig
