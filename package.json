@@ -1,5 +1,5 @@
 {
-  "name": "roadblock",
+  "name": "@zalando/roadblock",
   "version": "1.0.0",
   "description": "node.js app to collect github data",
   "main": "index.js",
