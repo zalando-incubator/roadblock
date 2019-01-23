@@ -29,7 +29,9 @@
     "object-mapper": "^5.0.0",
     "request-promise": "^4.2.2",
     "sequelize": "^4.41.0",
-    "sqlite3": "^4.0.3"
+    "sqlite3": "^4.0.3",
+    "pm2" : "3.2.9"
+    
   },
   "devDependencies": {
     "eslint": "^4.19.1"
