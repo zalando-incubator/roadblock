@@ -13,6 +13,7 @@ module.exports = class Repository extends Base {
         primaryKey: true
       },
       name: Sequelize.STRING,
+      owner: Sequelize.STRING,
       description: Sequelize.STRING,
       full_name: Sequelize.STRING,
       language: Sequelize.STRING,
@@ -25,13 +26,16 @@ module.exports = class Repository extends Base {
       type: {
         type: Sequelize.STRING,
         defaultValue: 'internal'
-      }
+      },
+      fork: Sequelize.BOOLEAN,
+      archived: Sequelize.BOOLEAN
     };
 
     this.map = {
       id: 'id',
       name: 'name',
       description: 'description',
+      'owner.login': 'owner',
       full_name: 'full_name',
       language: 'language',
       created_at: 'created_at',
@@ -40,14 +44,19 @@ module.exports = class Repository extends Base {
       stargazers_count: 'stars',
       open_issues_count: 'open_issues',
       watchers_count: 'watchers',
-      'owner.id': 'organisation_id'
+
+      fork: 'fork',
+      archived: 'archived'
     };
 
     this.name = 'Repository';
   }
 
   sync(force) {
-    this.model.belongsTo(this.dbClient.models.Organisation);
+    //this.model.belongsTo(this.dbClient.models.Organisation);
+    this.model.hasMany(this.dbClient.models.Release);
+    this.model.hasMany(this.dbClient.models.Contribution);
+
     this.model.belongsToMany(this.dbClient.models.Topic, {
       through: 'RepositoryTopic'
     });
@@ -57,20 +66,5 @@ module.exports = class Repository extends Base {
 
   async getAll(orgName) {
     return await this.ghClient.getRepos(orgName);
-  }
-
-  async saveOrUpdate(repository) {
-    const dbRepo = mapper(repository, this.map);
-    await this.model.upsert(dbRepo);
-    return dbRepo;
-  }
-
-  async bulkCreate(repositories) {
-    const dbRepos = helper.mapArray(repositories, this.map).filter(y => {
-      return !y.fork;
-    });
-
-    await this.model.bulkCreate(dbRepos);
-    return dbRepos;
   }
 };

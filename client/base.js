@@ -1,3 +1,6 @@
+const helper = require('./helper.js');
+const mapper = require('object-mapper');
+
 module.exports = class Base {
   constructor(githubClient, databaseClient) {
     this.ghClient = githubClient;
@@ -23,6 +26,20 @@ module.exports = class Base {
   // generic delete statement
   async destroy(where) {
     return await this.model.destroy(where);
+  }
+
+  async bulkCreate(valArray, externalValues) {
+    const dbValArray = this.map
+      ? helper.mapArray(valArray, this.map, externalValues)
+      : valArray;
+    await this.model.bulkCreate(dbValArray);
+    return dbValArray;
+  }
+
+  async saveOrUpdate(value) {
+    const dbValue = mapper(value, this.map);
+    await this.model.upsert(dbValue);
+    return dbValue;
   }
 
   getSchema() {

@@ -7,7 +7,7 @@ module.exports = class DatabaseClient {
       config.username,
       config.password,
       {
-        host: 'localhost',
+        host: config.host,
         dialect: config.dialect,
         operatorsAliases: false,
         pool: {
@@ -17,19 +17,7 @@ module.exports = class DatabaseClient {
           idle: 10000
         },
         storage: config.storage,
-
-        logging: (message, data) => {
-          if (data && data.type === 'INSERT') {
-            message = `Saving data to table: ${data.model.name} `;
-
-            if (data && data.instance && data.instance.dataValues) {
-              const dv = data.instance.dataValues;
-              if (dv.name) message += dv.name;
-              if (dv.login) message += dv.login;
-              if (dv.title) message += dv.title;
-            }
-          }
-        }
+        logging: false
       }
     );
   }

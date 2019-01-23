@@ -42,10 +42,4 @@ module.exports = class Commit extends Base {
   async getAll(orgName, repoName) {
     return await this.ghClient.getCommits(orgName, repoName);
   }
-
-  async bulkCreate(commits) {
-    const dbCommits = helper.mapArray(commits, this.map);
-    await this.model.bulkCreate(dbCommits);
-    return dbCommits;
-  }
 };

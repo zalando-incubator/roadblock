@@ -10,9 +10,15 @@ const Issue = require('./issue.js');
 const CommunityProfile = require('./communityprofile.js');
 const ExternalContribution = require('./externalcontribution.js');
 const Topic = require('./topic.js');
+const Release = require('./release.js');
+const Calendar = require('./calendar.js');
 
-module.exports = function(github, database, reset = false) {
+module.exports = function(github, database, reset = false, externalTypes = []) {
   var s = {};
+
+  //Setup helper calendar table for grouping activity based on months
+  s.Calendar = new Calendar(github, database);
+  s.Calendar.define();
 
   // Initialize the clients for each individual github api object
   s.Organisation = new Organisation(github, database);
@@ -48,7 +54,22 @@ module.exports = function(github, database, reset = false) {
   s.Topic = new Topic(github, database);
   s.Topic.define();
 
+  s.Release = new Release(github, database);
+  s.Release.define();
+
+  for (const client of externalTypes) {
+    try {
+      var cl = new client(github, database);
+      s[client.name] = cl;
+      s[client.name].define();
+    } catch (ex) {
+      console.log(ex);
+    }
+  }
+
   // finally sync the database so all schemas are in place
+  s.Calendar.sync(reset);
+
   s.Repository.sync(reset);
   s.Member.sync(reset);
   s.Organisation.sync(reset);
@@ -57,8 +78,16 @@ module.exports = function(github, database, reset = false) {
   s.Commit.sync(reset);
   s.Contribution.sync(reset);
   s.Issue.sync(reset);
+  s.CommunityProfile.sync(reset);
   s.ExternalContribution.sync(reset);
   s.Topic.sync(reset);
+  s.Release.sync(reset);
+
+  for (const client of externalTypes) {
+    try {
+      s[client.name].sync(reset);
+    } catch (ex) {}
+  }
 
   database.sync({ force: reset });
   return s;

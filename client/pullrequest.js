@@ -51,10 +51,4 @@ module.exports = class PullRequest extends Base {
   async getAll(orgName, repoName) {
     return await this.ghClient.getPullRequests(orgName, repoName);
   }
-
-  async bulkCreate(pullrequests) {
-    const dbPrs = helper.mapArray(pullrequests, this.map);
-    await this.model.bulkCreate(dbPrs);
-    return dbPrs;
-  }
 };

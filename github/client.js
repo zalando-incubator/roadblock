@@ -37,6 +37,11 @@ module.exports = class GithubClient {
       communityProfile: (owner, name) => {
         return `${this.url}/repos/${owner}/${name}/community/profile`;
       },
+      branchProtection: (owner, name, branch = 'master') => {
+        return `${
+          this.url
+        }/repos/${owner}/${name}/branches/${branch}/protection`;
+      },
       externalCollaboratorsForOrg: org => {
         return `${this.url}/orgs/${org}/outside_collaborators`;
       },
@@ -54,8 +59,16 @@ module.exports = class GithubClient {
         return `${this.url}/repos/${org}/${repo}/topics`;
       },
 
+      releasesForRepo: (org, repo) => {
+        return `${this.url}/repos/${org}/${repo}/releases`;
+      },
+
       memberEvents: member => {
         return `${this.url}/users/${member}/events/public`;
+      },
+
+      memberRepositories: member => {
+        return `${this.url}/users/${member}/repos?type=owner`;
       }
     };
 
@@ -79,6 +92,18 @@ module.exports = class GithubClient {
       headers: {
         ...this.headers,
         accept: 'application/vnd.github.mercy-preview+json'
+      },
+      logger: this.logger()
+    });
+  }
+
+  getRequestorTemplate(accceptHeader, standardHeaders = null) {
+    var h = standardHeaders ? standardHeaders : this.headers;
+
+    return ghrequestor.defaults({
+      headers: {
+        ...h,
+        accept: accceptHeader
       },
       logger: this.logger()
     });
@@ -111,9 +136,23 @@ module.exports = class GithubClient {
     return response.body;
   }
 
+  async getReposForUser(member) {
+    const response = await this.requestorTemplate.get(
+      this.api.memberRepositories(member)
+    );
+    return response.body;
+  }
+
   async getRepos(org) {
     const response = await this.requestorTemplate.get(
       this.api.repositories(org)
+    );
+    return response.body;
+  }
+
+  async getReleases(org, repo) {
+    const response = await this.requestorTemplate.get(
+      this.api.releasesForRepo(org, repo)
     );
     return response.body;
   }
@@ -155,6 +194,22 @@ module.exports = class GithubClient {
       const response = await this.requestorTemplatePreview.get(
         this.api.communityProfile(org, repo)
       );
+      return response.body;
+    } catch (e) {
+      return new Error(e);
+    }
+  }
+
+  async getBranchProtection(org, repo, branch = 'master') {
+    try {
+      var rqt = this.getRequestorTemplate(
+        'application/vnd.github.luke-cage-preview+json'
+      );
+
+      const response = await rqt.get(
+        this.api.branchProtection(org, repo, branch)
+      );
+
       return response.body;
     } catch (e) {
       return new Error(e);

@@ -15,11 +15,19 @@ async function updateOrCreate(model, where, newItem) {
   return foundItem;
 }
 
-function mapArray(val, objmap) {
+function mapArray(val, objmap, externalValues) {
   const arr = Array.isArray(val) ? val : [1].fill(val);
 
   return arr.map(x => {
-    return mapper(x, objmap);
+    x = mapper(x, objmap);
+    if (externalValues) {
+      for (var p in externalValues) {
+        if (externalValues.hasOwnProperty(p)) {
+          x[p] = externalValues[p];
+        }
+      }
+    }
+    return x;
   });
 }
 

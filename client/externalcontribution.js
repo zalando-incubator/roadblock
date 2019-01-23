@@ -9,7 +9,8 @@ module.exports = class ExternalContribution extends Base {
     this.schema = {
       id: {
         type: Sequelize.BIGINT,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
       },
       login: Sequelize.STRING,
       total: Sequelize.INTEGER,

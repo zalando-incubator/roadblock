@@ -33,7 +33,7 @@ module.exports = class Organisation extends Base {
       name: 'name',
       avatar_url: 'avatar',
       created_at: 'created_at',
-      follows: 'followers',
+      followers: 'followers',
       following: 'following',
       collaborators: 'collaborators',
       total_private_repos: 'private_repositories',
