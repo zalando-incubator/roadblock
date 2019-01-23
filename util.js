@@ -30,7 +30,7 @@ const timePassed = function(startTime) {
   seconds = seconds < 10 ? `0${seconds}` : seconds;
 
   console.log(
-    ` ⏱  Time passed: ${hours}:${minutes}:${seconds}.${milliseconds}`
+    `  ⏱   Time passed: ${hours}:${minutes}:${seconds}.${milliseconds}`
   );
 };
 
