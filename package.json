@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zalando/roadblock.git"
+    "url": "git+https://github.com/zalando-incubator/roadblock.git"
   },
   "author": "Zalando Open Source Team, Per Ploug",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/zalando/roadblock/issues"
+    "url": "https://github.com/zalando-incubator/roadblock/issues"
   },
-  "homepage": "https://github.com/zalando/roadblock#readme",
+  "homepage": "https://github.com/zalando-incubator/roadblock#readme",
   "dependencies": {
     "cli-progress": "^2.1.0",
     "command-line-args": "^5.0.2",
