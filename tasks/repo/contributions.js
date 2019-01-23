@@ -4,10 +4,10 @@ module.exports = async function(repo, context, config) {
     repo.name
   );
 
-  await client.Contribution.bulkCreate(
+  await context.client.Contribution.bulkCreate(
     contributions,
     context.externalValuesMap
   );
 
-  return;
+  return true;
 };

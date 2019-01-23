@@ -8,7 +8,7 @@ This project was built with simplicity and ease of use in mind. We simply wanted
 ## Installing and using
 Install from npm as a global command
 ```
-  > npm i roadblock -g
+  > npm i @zalando/roadblock -g
 ```
 
 Run the roadblock command in an empty folder

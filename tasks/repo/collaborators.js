@@ -9,5 +9,5 @@ module.exports = async function(repo, context, config) {
     context.externalValuesMap
   );
 
-  return;
+  return true;
 };
