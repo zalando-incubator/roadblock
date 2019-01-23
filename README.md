@@ -4,18 +4,98 @@ A Node.js application for collecting Github statistics into a _SQLite or Postgre
 
 This project was built with simplicity and ease of use in mind. We simply wanted GitHub data in a relational database which we could then create visualisations for using Metabase (https://www.metabase.com/).
 
-There are other projects out there like [GhCrawler](https://github.com/Microsoft/ghcrawler) which collect and handle much more detailed GitHub data than this project, that is not our focus.
+
+## Installing and using
+Install from npm as a global command
+```
+  > npm i roadblock -g
+```
+
+Run the roadblock command in an empty folder
+```
+  > roadblock
+```
+
+This will generate a basic `roadblock.json` file which you can then modify:
+
+```
+{
+    "github": {
+        "token": "xxx",
+        "url" : "https://internal.gith.ub/api/v3" 
+    },
+    "tasks": [
+        "pre/*", "org/*", "repo/releases"
+    ],
+    "orgs": [
+        "My-Org", "Second-org"
+    ]
+}
+```
+
+**url** is only required if you want to collect data from Github Enterprise.
+
+**Tasks** Specify what data you want to collect, by default it is set to * which means
+run all possible tasks.
+Either use wildcards like `*` or `org/*` or set to 
+specific tasks like `repo/issues` or ignore specific tasks with `!repo/profiles`
+
+**Orgs** By default roadblock will attempt to collect from all orgs, which the token 
+have access to, to filter or to query additional orgs, set them here.
+
+Use either: `*` `orgname` or `!orgname`.
 
 
-## Getting Started
+#### Configuration as arguments
+Configuration values can also be passed from the command line to avoid storing tokens in 
+clear text:
 
-These instructions will help you get a copy of the project up and running on your local machine for development and testing purposes.
+```
+> roadblock github.token=YOURTOKEN
 
-To run, you must have a Github token setup, you can setup a new token here: https://github.com/settings/tokens. Token needs access to **repo, read:org, read:user and user:email.**
+> roadblock orgs=["zalando","custom"]
+```
 
-You can also pass in a list of orgs which it should specifically query, it will only attempt to 
-do so if the token gives the user access to this. 
+### Output
+Script will run between 10 and 20 minutes and store collected data in a SQLite datase - you can also configure a postgres instance if needed.
 
+Sqlite Database and json summaries will be stored in the folder where the `roadblock` is invoked.
+
+## Included tasks
+The task system in roadblock divides the different data collection tasks into 4 seperate phases. 
+
+#### [Pre](tasks/pre)
+Tasks to collect initial data points, default is to collect configured organisations
+
+- `pre/organisations` - Collects available organisations from the user and configured orgs
+- `pre/calendar` - Creates a calendar table with years and months, helpful when querying data
+
+#### [Org](tasks/org)
+Tasks run for each seperate organisation, each task is passed an organisation object to process data based on. 
+
+- `org/members` - collect all members of the organisations
+- `org/repository` - collect all public, non-fork repositories on the organisation
+  
+#### [Repo](tasks/repo)
+Tasks run for each collected repository. 
+
+- `repo/collaborators` - Collect all collaborators on a repository
+- `repo/commits` - Collect all repository commits
+- `repo/contributions` - Collect all contributions (summarised changes)
+- `repo/issues` - Collect all issues on the repositories
+- `repo/profiles` - Repository health / community profile
+- `repo/pullrequests` - Repository pull requests
+- `repo/releases` - All releases on repository
+- `repo/topics` - Repository topics       
+
+#### [Post](tasks/post)
+Tasks to run after all org and repo data collection is completed
+
+- `post/export` - Export organisation and repository stats to json files
+- `post/upstream` - Collect upstream contribution stats from external repositories.
+
+
+## Using the source
 ```
 > Clone this project to your local machine
 > git clone https://github.com/zalando-incubator/roadblock.git
@@ -23,66 +103,8 @@ do so if the token gives the user access to this.
 
 > Run npm install and start collecting data
 > npm install
-> npm start GITHUBTOKEN
-```
-
-### Filter organisations and tasks
-
-You specify the specific organisations you want to crawl, if left empty it will crawl all orgs the token have access to:
 
 ```
-> npm start --  GITHUBTOKEN --orgs zalando stups 
-```
-
-You can specify which tasks to run as part of the data collection:
-
-```
-> npm start --  GITHUBTOKEN --tasks members commits 
-```
-
-`--tasks` can be left blank or be a string of the following:
-  - `members`
-  - `contributions`
-  - `pullrequests`
-  - `commits`
-  - `collaborators`
-  - `issues`
-  - `profiles`
-  - `upstream`
-
-You can specify the api endpoint for usage with a github enterprise instance
-
-```
-> npm start -- GITHUBTOKEN --url https://api.github.whatev.er
-```
-
-### Negative filters
-Both --orgs and --tasks can also use negative filters so `!topics *` will collect all repository data except topics
-
-`!zalando !stups *` will go through all organisations that the profile have access to, except zalando and stups.
-
-
-### Output
-Script will run between 10 and 20 minutes and store collected data in either the default SQLite database or in a SQLite database you configure.
-
-Sqlite Database and json summaries will be stored in the /data folder
-
-
-### Data collected by Roadblock
-
-Roadblock automatically collects all data from all the organisations which the token user has a public membership of, so there is no configuration of which organisations to collect from.
-
-When Roadblock runs, it will collect:
-
-- Organisations
-- Repositories
-- Members of organisations
-- Pull Requests
-- Commits
-- Issues
-- Community Profiles
-- External contributions
-- Topics
 
 ### Pre Requisites
 
