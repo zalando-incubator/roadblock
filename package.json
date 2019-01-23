@@ -14,8 +14,8 @@
     "type": "git",
     "url": "git+https://github.com/zalando-incubator/roadblock.git"
   },
-  "author": "Zalando Open Source Team, Per Ploug",
-  "license": "MIT",
+  "author": "Zalando Open Source Team, Per Ploug Krogslund",
+  "license": "MIT", 
   "bugs": {
     "url": "https://github.com/zalando-incubator/roadblock/issues"
   },
