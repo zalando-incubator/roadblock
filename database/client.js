@@ -16,8 +16,7 @@ module.exports = class DatabaseClient {
           acquire: 30000,
           idle: 10000
         },
-        storage: config.storage,
-        logging: false
+        storage: config.storage
       }
     );
   }

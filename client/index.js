@@ -13,7 +13,12 @@ const Topic = require('./topic.js');
 const Release = require('./release.js');
 const Calendar = require('./calendar.js');
 
-module.exports = function(github, database, reset = false, externalTypes = []) {
+module.exports = async function(
+  github,
+  database,
+  reset = false,
+  externalTypes = []
+) {
   var s = {};
 
   //Setup helper calendar table for grouping activity based on months
@@ -89,6 +94,6 @@ module.exports = function(github, database, reset = false, externalTypes = []) {
     } catch (ex) {}
   }
 
-  database.sync({ force: reset });
+  await database.sync({ force: reset });
   return s;
 };

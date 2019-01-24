@@ -7,6 +7,11 @@ module.exports = class Calendar extends Base {
     super(githubClient, databaseClient);
 
     this.schema = {
+      id: {
+        type: Sequelize.BIGINT,
+        primaryKey: true,
+        autoIncrement: true
+      },
       date: Sequelize.DATE
     };
 

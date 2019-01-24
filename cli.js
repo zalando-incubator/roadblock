@@ -13,7 +13,7 @@ const localConfigPath = process.cwd() + '/roadblock.json';
 async function init() {
   var localConfigExist = fs.existsSync(localConfigPath);
   if (localConfigExist) {
-    console.log('  ✅    roadblock.json found - starting roadblock...');
+    console.log('  ✅   roadblock.json found - starting roadblock...');
     const localConfig = require(localConfigPath);
     const config = { ...util.defaultConfig, ...localConfig };
 
@@ -22,7 +22,11 @@ async function init() {
     for (const arg of arguments) {
       var keyval = arg.split('=');
       if (keyval.length > 1) {
-        dottie.set(config, keyval[0], JSON.parse(keyval[1]));
+        var val = keyval[1];
+        if (val.indexOf('[') == 0 || val.indexOf('{') == 0) {
+          val = JSON.parse(val);
+        }
+        dottie.set(config, keyval[0], val);
       }
     }
 
@@ -33,12 +37,12 @@ async function init() {
 }
 
 async function setup() {
-  console.log('  ℹ️    Creating roadblock.json configuration file');
+  console.log('  ℹ️   Creating roadblock.json configuration file');
   var json = JSON.stringify(util.minimalConfig, null, 4);
   fs.writeFileSync(localConfigPath, json, 'utf8');
 
   console.log(
-    '  ✅    Default config created - update the configuration and re-run the roadblock command'
+    '  ✅   Default config created - update the configuration and re-run the roadblock command'
   );
   return true;
 }
@@ -50,7 +54,7 @@ async function run(config) {
   context.database = await new DatabaseClient(config.db).db();
 
   var externalClients = util.getClients().map(x => require(x));
-  context.client = Client(
+  context.client = await Client(
     context.github,
     context.database,
     true,
@@ -62,7 +66,7 @@ async function run(config) {
   // these tasks have no org or repo passed to them.
   var pre_funcs = util.getTasks('pre', config.tasks).map(x => require(x));
   if (pre_funcs.length > 0) {
-    console.log(`  ℹ️    Running ${pre_funcs.length} pre-processing tasks`);
+    console.log(`  ℹ️   Running ${pre_funcs.length} pre-processing tasks`);
 
     for (const task of pre_funcs) {
       var result = await task(context, config);
@@ -75,7 +79,7 @@ async function run(config) {
     var orgs = await context.client.Organisation.model.findAll();
 
     console.log(
-      `  ℹ️    Running ${org_funcs.length} organisation tasks on ${
+      `  ℹ️   Running ${org_funcs.length} organisation tasks on ${
         orgs.length
       } imported github organisations`
     );
@@ -97,7 +101,7 @@ async function run(config) {
     });
 
     console.log(
-      `  ℹ️    Running ${repo_funcs.length} repository tasks on ${
+      `  ℹ️   Running ${repo_funcs.length} repository tasks on ${
         repositories.length
       } imported github repositories`
     );
@@ -128,13 +132,13 @@ async function run(config) {
   // Do all post-process / export tasks
   var post_funcs = util.getTasks('post', config.tasks).map(x => require(x));
   if (post_funcs.length > 0) {
-    console.log(`  ℹ️    Running ${post_funcs.length} post-processing tasks`);
+    console.log(`  ℹ️   Running ${post_funcs.length} post-processing tasks`);
     for (const task of post_funcs) {
       await task(context, config);
     }
   }
 
-  console.log(`  ℹ️    Roadblock processing complete`);
+  console.log(`  ℹ️   Roadblock processing complete`);
 }
 
 init();
