@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node cli.js",
-    "test": "eslint ."
+    "test": "eslint . meh"
   },
   "bin": {
     "roadblock": "./cli.js"
