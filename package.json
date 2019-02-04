@@ -1,7 +1,7 @@
 {
   "name": "@zalando/roadblock",
   "version": "1.0.1",
-  "description": "node.js app to collect github data",
+  "description": "node.js app to collect github statistics data",
   "main": "index.js",
   "scripts": {
     "start": "node cli.js",
