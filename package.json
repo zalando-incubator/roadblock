@@ -36,17 +36,3 @@
     "eslint": "^4.19.1"
   }
 }
-    "language": "JavaScript",
-    "created_at": "2015-12-14T09:26:18.000Z",
-    "updated_at": "2018-10-18T14:50:26.000Z",
-    "stars": 391,
-    "forks": 40,
-    "open_issues": 17,
-    "watchers": 391,
-    "type": "internal",
-    "organisation_id": 1564818
-  },
-  {
-    "id": 34117853,
-    "name": "spilo",
-    "description": "Highly available elephant herd: HA PostgreSQL cluster using Docker",
