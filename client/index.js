@@ -12,6 +12,9 @@ const ExternalContribution = require('./externalcontribution.js');
 const Topic = require('./topic.js');
 const Release = require('./release.js');
 const Calendar = require('./calendar.js');
+const Vulnerability = require('./vulnerability.js');
+
+const Base = require('./base.js');
 
 module.exports = async function(
   github,
@@ -20,6 +23,8 @@ module.exports = async function(
   externalTypes = []
 ) {
   var s = {};
+
+  s.ClientBase = Base;
 
   //Setup helper calendar table for grouping activity based on months
   s.Calendar = new Calendar(github, database);
@@ -62,6 +67,9 @@ module.exports = async function(
   s.Release = new Release(github, database);
   s.Release.define();
 
+  s.Vulnerability = new Vulnerability(github, database);
+  s.Vulnerability.define();
+
   for (const client of externalTypes) {
     try {
       var cl = new client(github, database);
@@ -87,6 +95,7 @@ module.exports = async function(
   s.ExternalContribution.sync(reset);
   s.Topic.sync(reset);
   s.Release.sync(reset);
+  s.Vulnerability.sync(reset);
 
   for (const client of externalTypes) {
     try {

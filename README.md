@@ -75,6 +75,7 @@ Tasks run for each seperate organisation, each task is passed an organisation ob
 
 - `org/members` - collect all members of the organisations
 - `org/repository` - collect all public, non-fork repositories on the organisation
+- `org/vulnerabilities` - collect all security alerts from all repositories on the organisation
   
 #### [Repo](tasks/repo)
 Tasks run for each collected repository. 

@@ -1,4 +1,5 @@
 const ghrequestor = require('ghrequestor');
+const graphql = require('@octokit/graphql');
 
 module.exports = class GithubClient {
   constructor(token, baseUrl = 'https://api.github.com') {
@@ -120,6 +121,69 @@ module.exports = class GithubClient {
       );
       return response.body;
     } catch (e) {
+      return new Error(e);
+    }
+  }
+
+  async getVulnerabilityAlerts(org) {
+    try {
+      var response = await graphql(
+        `
+          query vulnerBilityAlers($owner: String!) {
+            organization(login: $owner) {
+              repositories(privacy: PUBLIC, first: 100) {
+                edges {
+                  node {
+                    id
+                    vulnerabilityAlerts(last: 20) {
+                      edges {
+                        node {
+                          vulnerableManifestFilename
+                          vulnerableManifestPath
+                          vulnerableRequirements
+
+                          dismissReason
+                          dismissedAt
+
+                          dismisser {
+                            login
+                          }
+
+                          securityAdvisory {
+                            description
+                            severity
+                            summary
+                          }
+
+                          securityVulnerability {
+                            vulnerableVersionRange
+                            severity
+                            package {
+                              name
+                              ecosystem
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `,
+        {
+          owner: org,
+          headers: {
+            authorization: 'token ' + this.token,
+            accept: 'application/vnd.github.vixen-preview+json'
+          }
+        }
+      );
+
+      return response.organization.repositories.edges.map(x => x.node);
+    } catch (e) {
+      console.log(e);
       return new Error(e);
     }
   }

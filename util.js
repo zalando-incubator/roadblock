@@ -1,4 +1,6 @@
 const fs = require('fs');
+var path = require('path');
+
 const { performance } = require('perf_hooks');
 
 const barlogger = function() {
@@ -72,7 +74,9 @@ var getClients = function() {
   var localPath = process.cwd() + '/client/';
 
   if (fs.existsSync(localPath)) {
-    for (const file of fs.readdirSync(localPath)) {
+    for (const file of fs
+      .readdirSync(localPath)
+      .filter(x => path.extname(x) === '.js')) {
       tasks.push(localPath + file);
     }
   }

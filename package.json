@@ -1,7 +1,7 @@
 {
   "name": "@zalando/roadblock",
-  "version": "1.0.1",
-  "description": "node.js app to collect github statistics data",
+  "version": "1.0.3",
+  "description": "node.js app to collect github data",
   "main": "index.js",
   "scripts": {
     "start": "node cli.js",
@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/zalando-incubator/roadblock#readme",
   "dependencies": {
+    "@octokit/graphql": "^2.0.1",
     "cli-progress": "^2.1.0",
     "command-line-args": "^5.0.2",
     "dottie": "^2.0.1",
