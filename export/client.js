@@ -36,6 +36,7 @@ module.exports = class ExportClient {
     repos = repos.map(x => {
       return x.dataValues;
     });
+
     saveToFile(repos, this.config.storage, 'repositories');
 
     // organisation stats

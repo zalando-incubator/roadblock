@@ -13,5 +13,5 @@ module.exports = async function(context, config) {
     await context.client.ExternalContribution.removeContributionsWithoutMembers();
   }
 
-  return;
+  return true;
 };
