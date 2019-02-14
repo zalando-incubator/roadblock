@@ -1,0 +1,13 @@
+largecommits : 
+  enabled: false
+
+approvals: 
+  includeAuthor: true
+  minimum: 2
+  enabled: true
+
+specification:
+  enabled: false
+
+license :
+  enabled: false
