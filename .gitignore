@@ -66,3 +66,4 @@ data/db2.sqlite
 .DS_Store
 
 /playground
+tmp-repo-data
