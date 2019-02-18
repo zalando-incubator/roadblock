@@ -10,7 +10,7 @@ module.exports = async function(org, context, config) {
     `  ✅   Saving ${githubRepositories.length} ${org.login} repositories`
   );
 
-  await context.client.Repository.bulkCreate(githubRepositories);
+  await context.client.Repository.bulkCreate(githubRepositories, org);
 
   util.timePassed(context.start);
   return;

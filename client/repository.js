@@ -21,6 +21,7 @@ module.exports = class Repository extends Base {
       updated_at: Sequelize.DATE,
       stars: Sequelize.INTEGER,
       forks: Sequelize.INTEGER,
+      size: Sequelize.INTEGER,
       open_issues: Sequelize.INTEGER,
       watchers: Sequelize.INTEGER,
       type: {
@@ -41,6 +42,7 @@ module.exports = class Repository extends Base {
       created_at: 'created_at',
       updated_at: 'updated_at',
       forks_count: 'forks',
+      size: 'size',
       stargazers_count: 'stars',
       open_issues_count: 'open_issues',
       watchers_count: 'watchers',
@@ -61,10 +63,21 @@ module.exports = class Repository extends Base {
       through: 'RepositoryTopic'
     });
 
+    this.model.belongsTo(this.dbClient.models.Organisation);
+
     super.sync(force);
   }
 
   async getAll(orgName) {
     return await this.ghClient.getRepos(orgName);
+  }
+
+  async bulkCreate(repos, organisation) {
+    for (const repo of repos) {
+      const dbrepo = mapper(repo, this.map);
+      dbrepo.organisation_id = organisation.id;
+
+      await this.model.upsert(dbrepo);
+    }
   }
 };

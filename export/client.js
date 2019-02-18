@@ -8,17 +8,21 @@ function _getFileDate() {
 }
 
 function saveToFile(data, folder, filename) {
-  fs.writeFile(
-    `${folder}${filename}.json`,
-    JSON.stringify(data, null, 2),
-    'utf8'
-  );
+  try {
+    fs.writeFileSync(
+      `${folder}${filename}.json`,
+      JSON.stringify(data, null, 2),
+      'utf8'
+    );
 
-  fs.writeFile(
-    `${folder}${filename}-${_getFileDate()}.json`,
-    JSON.stringify(data, null, 2),
-    'utf8'
-  );
+    fs.writeFileSync(
+      `${folder}${filename}-${_getFileDate()}.json`,
+      JSON.stringify(data, null, 2),
+      'utf8'
+    );
+  } catch (ex) {
+    console.log(ex);
+  }
 }
 
 module.exports = class ExportClient {

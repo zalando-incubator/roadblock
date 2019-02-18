@@ -1,10 +1,12 @@
 module.exports = async function(repo, context, config) {
+  await context.client.Collaborator.destroy(repo.id);
+
   var collaborators = await context.client.Collaborator.getAll(
     repo.owner,
     repo.name
   );
 
-  context.client.Collaborator.bulkCreate(
+  await context.client.Collaborator.bulkCreate(
     collaborators,
     context.externalValuesMap
   );

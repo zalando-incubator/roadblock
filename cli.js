@@ -57,7 +57,7 @@ async function run(config) {
   context.client = await Client(
     context.github,
     context.database,
-    true,
+    false,
     externalClients
   );
   context.exportClient = new ExportClient(context.database, config.export);

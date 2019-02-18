@@ -302,6 +302,12 @@ module.exports = class GithubClient {
     );
   }
 
+  async getContributionStats(org, repo) {
+    return await this.requestorTemplate.getAll(
+      this.api.contributorStatsForRepo(org, repo)
+    );
+  }
+
   async getExternalContributions(org, repo) {
     try {
       return await this.requestorTemplate.getAll(

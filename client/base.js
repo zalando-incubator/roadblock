@@ -23,9 +23,13 @@ module.exports = class Base {
     this.model.sync(force);
   }
 
-  // generic delete statement
-  async destroy(where) {
-    return await this.model.destroy(where);
+  // generic repository delete statement
+  async destroy(id, where = { where: { repository_id: id } }) {
+    try {
+      return await this.model.destroy(where);
+    } catch (ex) {
+      console.write(this.name + ' truncating failed: ' + ex);
+    }
   }
 
   async bulkCreate(valArray, externalValues) {

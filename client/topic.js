@@ -19,6 +19,14 @@ module.exports = class Topic extends Base {
     super.sync(force);
   }
 
+  async destroy(id, where = { where: { repository_id: id } }) {
+    try {
+      return await this.dbClient.models.RepositoryTopic.destroy(where);
+    } catch (ex) {
+      console.write(this.name + ' truncating failed: ' + ex);
+    }
+  }
+
   async getAll(orgName, repoName) {
     var result = await this.ghClient.getTopics(orgName, repoName);
 
