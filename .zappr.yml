@@ -11,3 +11,6 @@ specification:
 
 license :
   enabled: false
+
+X-Zalando-Type: tools
+X-Zalando-Team: opensource
