@@ -117,6 +117,10 @@ const defaultConfig = {
   externalProjects: []
 };
 
+const uniqueFilter = (value, index, self) => {
+  return self.indexOf(value) === index;
+};
+
 module.exports = {
   barlogger,
   runTask,
@@ -124,5 +128,6 @@ module.exports = {
   getClients,
   timePassed,
   defaultConfig,
-  minimalConfig
+  minimalConfig,
+  uniqueFilter
 };
