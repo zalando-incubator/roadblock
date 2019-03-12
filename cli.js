@@ -53,6 +53,28 @@ async function run(config) {
   context.github = new GithubClient(config.github.token, config.github.url);
   context.database = await new DatabaseClient(config.db).db();
 
+  var scopes = await context.github.getScopes();
+  var scopesValid = true;
+
+  if (!scopes.indexOf('repo') < 0) {
+    console.error(`  ⚠️  OAuth token does not have repo scope access`);
+    scopesValid = false;
+  }
+
+  if (scopes.indexOf('read:org') < 0) {
+    console.error(`  ⚠️  OAuth token does not have read:org scope access`);
+    scopesValid = false;
+  }
+
+  if (!scopes.indexOf('read:user') < 0) {
+    console.error(`  ⚠️  OAuth token does not have read:user scope access`);
+    scopesValid = false;
+  }
+
+  if (!scopesValid) {
+    throw 'Github auth token does not have the correct access scopes configured';
+  }
+
   var externalClients = util.getClients().map(x => require(x));
   context.client = await Client(
     context.github,
@@ -100,33 +122,37 @@ async function run(config) {
       }
     });
 
-    console.log(
-      `  ℹ️   Running ${repo_funcs.length} repository tasks on ${
-        repositories.length
-      } imported github repositories`
-    );
+    if (repositories.length > 0) {
+      console.log(
+        `  ℹ️   Running ${repo_funcs.length} repository tasks on ${
+          repositories.length
+        } imported github repositories`
+      );
 
-    const repoProgress = new cliProgress.Bar(
-      {},
-      cliProgress.Presets.shades_classic
-    );
+      const repoProgress = new cliProgress.Bar(
+        {},
+        cliProgress.Presets.shades_classic
+      );
 
-    repoProgress.start(repositories.length, 0);
+      repoProgress.start(repositories.length, 0);
 
-    // Do all reposiotory level tasks
-    for (const repository of repositories) {
-      var task_queue = [];
-      context.externalValuesMap = { repository_id: repository.id };
+      // Do all reposiotory level tasks
+      for (const repository of repositories) {
+        var task_queue = [];
+        context.externalValuesMap = { repository_id: repository.id };
 
-      for (const repoTaskFunc of repo_funcs) {
-        task_queue.push(repoTaskFunc(repository, context, config));
+        for (const repoTaskFunc of repo_funcs) {
+          task_queue.push(repoTaskFunc(repository, context, config));
+        }
+
+        await Promise.all(task_queue);
+        repoProgress.increment();
       }
 
-      await Promise.all(task_queue);
-      repoProgress.increment();
+      repoProgress.stop();
+    } else {
+      console.log('  ⚠️   No repositories downloaded');
     }
-
-    repoProgress.stop();
   }
 
   // Do all post-process / export tasks

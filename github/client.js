@@ -13,6 +13,10 @@ module.exports = class GithubClient {
         return `${this.url}/orgs/${org}`;
       },
 
+      rateLimit: () => {
+        return `${this.url}/rate_limit`;
+      },
+
       repositories: org => {
         return `${this.url}/orgs/${org}/repos?type=sources`;
       },
@@ -123,6 +127,11 @@ module.exports = class GithubClient {
     } catch (e) {
       return new Error(e);
     }
+  }
+
+  async getScopes() {
+    const response = await this.requestorTemplate.get(this.api.rateLimit());
+    return response.headers['x-oauth-scopes'].replace(' ', '').split(',');
   }
 
   async getVulnerabilityAlerts(org) {
@@ -325,8 +334,12 @@ module.exports = class GithubClient {
       result.log = log;
     } else {
       result.log = (level, message, data) => {
-        if (data.target) {
-          // console.debug(`     ⬇️      Downloading ${data.target}`);
+        if (level === 'error') {
+          console.error(
+            `  ⚠️   Github Request Error: ${data.statusCode}: ${
+              data.message
+            } - ${data.target}`
+          );
         }
       };
     }
