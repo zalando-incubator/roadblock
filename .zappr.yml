@@ -10,4 +10,7 @@ specification:
   enabled: false
 
 license :
-  enabled: false
+  enabled: true
+
+X-Zalando-Type: tools
+X-Zalando-Team: opensource

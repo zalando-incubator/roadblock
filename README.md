@@ -33,6 +33,8 @@ This will generate a basic `roadblock.json` file which you can then modify:
 }
 ```
 
+**Github.token** a [github token](https://github.com/settings/tokens/new) is required to access most data - ensure that the token have read access to `repo`, `repo:status`, `public_repo`, `read:org`, `read:user`, `read:discussion`.
+
 **url** is only required if you want to collect data from Github Enterprise.
 
 **Tasks** Specify what data you want to collect, by default it is set to * which means
