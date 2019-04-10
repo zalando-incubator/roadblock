@@ -1,6 +1,6 @@
 {
   "name": "@zalando/roadblock",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "node.js app to collect github data",
   "main": "index.js",
   "scripts": {
@@ -27,6 +27,7 @@
     "dottie": "^2.0.1",
     "ghrequestor": "^0.1.7",
     "git-guilt": "^0.1.1",
+    "js-yaml": "^3.13.1",
     "node-fetch": "^2.3.0",
     "object-mapper": "^5.0.0",
     "request-promise": "^4.2.2",
