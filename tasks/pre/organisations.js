@@ -17,8 +17,9 @@ module.exports = async function(context, config) {
       console.log(`  ⬇️   Downloading ${orgName}`);
 
       var details = await context.client.Organisation.getDetails(orgName);
-      if (!details instanceof Error) {
+      if (details && details.type === 'Organization') {
         details = await context.client.Organisation.saveOrUpdate(details);
+        console.log(`  💾   Saved ${orgName}`);
       }
     }
   }

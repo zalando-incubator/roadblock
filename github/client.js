@@ -42,6 +42,9 @@ module.exports = class GithubClient {
       communityProfile: (owner, name) => {
         return `${this.url}/repos/${owner}/${name}/community/profile`;
       },
+      webhooks: (owner, name) => {
+        return `${this.url}/repos/${owner}/${name}/hooks`;
+      },
       branchProtection: (owner, name, branch = 'master') => {
         return `${
           this.url
@@ -273,6 +276,13 @@ module.exports = class GithubClient {
     }
   }
 
+  async getHooks(org, repo) {
+    const response = await this.requestorTemplate.get(
+      this.api.webhooks(org, repo)
+    );
+    return response.body;
+  }
+
   async getBranchProtection(org, repo, branch = 'master') {
     try {
       var rqt = this.getRequestorTemplate(
@@ -336,9 +346,9 @@ module.exports = class GithubClient {
       result.log = (level, message, data) => {
         if (level === 'error') {
           console.error(
-            `  ⚠️   Github Request Error: ${data.statusCode}: ${
-              data.message
-            } - ${data.target}`
+            `\n\n  ⚠️   Github Error: ${data.statusCode} \n 
+      ${data.target} \n
+      ${data.message} \n\n`
           );
         }
       };

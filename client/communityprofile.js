@@ -2,6 +2,7 @@ const Base = require('./base.js');
 const Sequelize = require('sequelize');
 const helper = require('./helper.js');
 const rp = require('request-promise');
+const yaml = require('js-yaml');
 
 module.exports = class CommunityProfile extends Base {
   constructor(githubClient, databaseClient) {
@@ -26,8 +27,13 @@ module.exports = class CommunityProfile extends Base {
       security_file: Sequelize.BOOLEAN,
       codeowners_file: Sequelize.BOOLEAN,
       maintainers_file: Sequelize.BOOLEAN,
+
       zappr_file: Sequelize.BOOLEAN,
       zappr_status_check: Sequelize.BOOLEAN,
+      zappr_webhook_active: Sequelize.BOOLEAN,
+      zappr_team: Sequelize.STRING,
+      zappr_type: Sequelize.STRING,
+
       required_reviewers: Sequelize.BOOLEAN,
       require_codeowners: Sequelize.BOOLEAN,
       protected_master: Sequelize.BOOLEAN,
@@ -101,9 +107,13 @@ module.exports = class CommunityProfile extends Base {
 
       'files.security': 'security_file',
       'files.contributing': 'contributing_file',
-      'files.zappr': 'zappr_file',
       'files.codeowners': 'codeowners_file',
-      'files.maintainers': 'maintainers_file'
+      'files.maintainers': 'maintainers_file',
+
+      'zappr.active': 'zappr_webhook_active',
+      'zappr.fill': 'zappr_file',
+      'zappr.type': 'zappr_type',
+      'zappr.team': 'zappr_team'
     };
 
     this.name = 'CommunityProfile';
@@ -128,12 +138,30 @@ module.exports = class CommunityProfile extends Base {
     }
   }
 
+  async getUrl(url) {
+    const options = {
+      uri: url,
+      resolveWithFullResponse: true
+    };
+
+    try {
+      const res = await rp(options);
+      return res.body;
+    } catch (err) {
+      return null;
+    }
+  }
+
   async getAll(orgName, repoName) {
     var community = await this.ghClient.getCommunityProfile(orgName, repoName);
-    var branchProtection = await this.ghClient.getBranchProtection(
-      orgName,
-      repoName,
-      'master'
+
+    var hooks = await this.ghClient.getHooks(orgName, repoName);
+    var zapprHook = hooks.filter(
+      x =>
+        x.config &&
+        x.config.url &&
+        x.config.url.toLowerCase() ===
+          'https://zappr.opensource.zalan.do/api/hook'
     );
 
     var filesBaseUrl =
@@ -142,6 +170,40 @@ module.exports = class CommunityProfile extends Base {
       '/' +
       repoName +
       '/master/';
+
+    var zappr = {
+      found: false,
+      file: false
+    };
+
+    var zapprFile = await this.getUrl(filesBaseUrl + '.zappr.yaml');
+    if (zapprFile) {
+      try {
+        var doc = yaml.safeLoad(zapprFile);
+        zappr.file = true;
+
+        if (doc.hasOwnProperty('X-Zalando-Team')) {
+          zappr.team = doc['X-Zalando-Team'];
+        }
+
+        if (doc.hasOwnProperty('X-Zalando-Type')) {
+          zappr.type = doc['X-Zalando-Type'];
+        }
+      } catch (ex) {
+        console.log(ex);
+      }
+    }
+    if (zapprHook && zapprHook.length > 0) {
+      zappr.found = true;
+      zappr.url = zapprHook[0].config.url;
+      zappr.active = zapprHook[0].active;
+    }
+
+    var branchProtection = await this.ghClient.getBranchProtection(
+      orgName,
+      repoName,
+      'master'
+    );
 
     var files = {};
     files.zappr = await this.urlExists(filesBaseUrl + '.zappr.yaml');
@@ -167,7 +229,8 @@ module.exports = class CommunityProfile extends Base {
     return {
       community,
       branchProtection,
-      files
+      files,
+      zappr
     };
   }
 };
