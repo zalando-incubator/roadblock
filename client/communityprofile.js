@@ -152,51 +152,58 @@ module.exports = class CommunityProfile extends Base {
     }
   }
 
-  async getAll(orgName, repoName) {
-    var community = await this.ghClient.getCommunityProfile(orgName, repoName);
-
-    var hooks = await this.ghClient.getHooks(orgName, repoName);
-    var zapprHook = hooks.filter(
-      x =>
-        x.config &&
-        x.config.url &&
-        x.config.url.toLowerCase() ===
-          'https://zappr.opensource.zalan.do/api/hook'
-    );
-
-    var filesBaseUrl =
-      'https://raw.githubusercontent.com/' +
-      orgName +
-      '/' +
-      repoName +
-      '/master/';
-
+  async getAll(orgName, repoName, config) {
     var zappr = {
       found: false,
       file: false
     };
 
-    var zapprFile = await this.getUrl(filesBaseUrl + '.zappr.yaml');
-    if (zapprFile) {
-      try {
-        var doc = yaml.safeLoad(zapprFile);
-        zappr.file = true;
+    var files = {};
 
-        if (doc.hasOwnProperty('X-Zalando-Team')) {
-          zappr.team = doc['X-Zalando-Team'];
+    var community = await this.ghClient.getCommunityProfile(orgName, repoName);
+
+    if (config && config.zalando.zappr) {
+      var hooks = await this.ghClient.getHooks(orgName, repoName);
+
+      if (hooks && hooks.length && hooks.length > 0) {
+        var zapprHook = hooks.filter(
+          x =>
+            x.config &&
+            x.config.url &&
+            x.config.url.toLowerCase() ===
+              'https://zappr.opensource.zalan.do/api/hook'
+        );
+
+        var filesBaseUrl =
+          config.url.raw + orgName + '/' + repoName + '/master/';
+
+        var zapprFile = await this.getUrl(filesBaseUrl + '.zappr.yaml');
+
+        if (zapprFile) {
+          try {
+            var doc = yaml.safeLoad(zapprFile);
+            zappr.file = true;
+
+            if (doc.hasOwnProperty('X-Zalando-Team')) {
+              zappr.team = doc['X-Zalando-Team'];
+            }
+
+            if (doc.hasOwnProperty('X-Zalando-Type')) {
+              zappr.type = doc['X-Zalando-Type'];
+            }
+          } catch (ex) {
+            console.log(ex);
+          }
         }
 
-        if (doc.hasOwnProperty('X-Zalando-Type')) {
-          zappr.type = doc['X-Zalando-Type'];
+        if (zapprHook && zapprHook.length > 0) {
+          zappr.found = true;
+          zappr.url = zapprHook[0].config.url;
+          zappr.active = zapprHook[0].active;
         }
-      } catch (ex) {
-        console.log(ex);
       }
-    }
-    if (zapprHook && zapprHook.length > 0) {
-      zappr.found = true;
-      zappr.url = zapprHook[0].config.url;
-      zappr.active = zapprHook[0].active;
+
+      files.zappr = await this.urlExists(filesBaseUrl + '.zappr.yaml');
     }
 
     var branchProtection = await this.ghClient.getBranchProtection(
@@ -204,9 +211,6 @@ module.exports = class CommunityProfile extends Base {
       repoName,
       'master'
     );
-
-    var files = {};
-    files.zappr = await this.urlExists(filesBaseUrl + '.zappr.yaml');
 
     files.contributing = await this.urlExists(filesBaseUrl + 'CONTRUBUTING.md');
     if (!files.contributing) {

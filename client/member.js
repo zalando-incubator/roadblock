@@ -46,7 +46,13 @@ module.exports = class Member extends Base {
   }
 
   async getAll(orgName, logger) {
-    return await this.ghClient.getMembers(orgName, logger);
+    try {
+      return await this.ghClient.getMembers(orgName, logger);
+    } catch (ex) {
+      console.error(ex);
+    }
+
+    return [];
   }
 
   async saveOrUpdate(member, organisation) {

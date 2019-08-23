@@ -19,26 +19,17 @@ var mkdir = function(dir) {
   }
 };
 
-var rmdir = function(dir) {
-  if (fs.existsSync(dir)) {
-    var list = fs.readdirSync(dir);
-    for (var i = 0; i < list.length; i++) {
-      var filename = path.join(dir, list[i]);
-      var stat = fs.statSync(filename);
-
-      if (filename == '.' || filename == '..') {
-        // pass these files
-      } else if (stat.isDirectory()) {
-        // rmdir recursively
-        rmdir(filename);
+var rmdir = function(dir_path) {
+  if (fs.existsSync(dir_path)) {
+    fs.readdirSync(dir_path).forEach(function(entry) {
+      var entry_path = path.join(dir_path, entry);
+      if (fs.lstatSync(entry_path).isDirectory()) {
+        rmdir(entry_path);
       } else {
-        // rm fiilename
-        fs.unlinkSync(filename);
+        fs.unlinkSync(entry_path);
       }
-    }
-    fs.rmdirSync(dir);
-  } else {
-    console.warn('warn: ' + dir + ' not exists');
+    });
+    fs.rmdirSync(dir_path);
   }
 };
 
@@ -64,11 +55,12 @@ module.exports = class Blame extends Base {
     super.sync(force);
   }
 
-  async getAll(orgName, repoName) {
+  async getAll(orgName, repoName, config) {
     var folder = __dirname + '/tmp-repo-data';
+    rmdir(folder);
     mkdir(folder);
 
-    const remote = `https://github.com/${orgName}/${repoName}.git`;
+    const remote = `${config.github.url.git}/${orgName}/${repoName}.git`;
     const git = gitPromise(folder);
 
     try {

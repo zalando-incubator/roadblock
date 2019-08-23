@@ -60,6 +60,10 @@ module.exports = class Organisation extends Base {
     return await this.ghClient.getOrgDetails(orgName);
   }
 
+  async getOrg(orgName) {
+    return await this.ghClient.getOrg(orgName);
+  }
+
   async getForUser() {
     return await this.ghClient.getOrgsForUser();
   }

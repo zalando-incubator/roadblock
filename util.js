@@ -22,10 +22,10 @@ const runTask = function(task, filter) {
 const timePassed = function(startTime) {
   var duration = performance.now() - startTime;
 
-  var milliseconds = parseInt((duration % 1000) / 100),
-    seconds = parseInt((duration / 1000) % 60),
-    minutes = parseInt((duration / (1000 * 60)) % 60),
-    hours = parseInt((duration / (1000 * 60 * 60)) % 24);
+  var milliseconds = (duration % 1000) / 100,
+    seconds = (duration / 1000) % 60,
+    minutes = (duration / (1000 * 60)) % 60,
+    hours = (duration / (1000 * 60 * 60)) % 24;
 
   hours = hours < 10 ? `0${hours}` : hours;
   minutes = minutes < 10 ? `0${minutes}` : minutes;
@@ -97,7 +97,11 @@ const minimalConfig = {
 const defaultConfig = {
   github: {
     token: '',
-    url: 'https://api.github.com'
+    url: {
+      git: 'https://github.com',
+      api: 'https://api.github.com',
+      raw: 'https://raw.githubusercontent.com'
+    }
   },
 
   tasks: ['*'],

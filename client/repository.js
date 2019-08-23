@@ -72,6 +72,10 @@ module.exports = class Repository extends Base {
     return await this.ghClient.getRepos(orgName);
   }
 
+  async getRepo(orgName, repo) {
+    return await this.ghClient.getRepo(orgName, repo);
+  }
+
   async bulkCreate(repos, organisation) {
     for (const repo of repos) {
       const dbrepo = mapper(repo, this.map);

@@ -28,7 +28,7 @@ module.exports = class Base {
     try {
       return await this.model.destroy(where);
     } catch (ex) {
-      console.write(this.name + ' truncating failed: ' + ex);
+      console.log(this.name + ' truncating failed: ' + ex);
     }
   }
 

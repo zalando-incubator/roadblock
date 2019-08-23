@@ -24,12 +24,15 @@ module.exports = class GithubClient {
       repository: (org, repo) => {
         return `${this.url}/repos/${org}/${repo}`;
       },
+
       pullRequests: (owner, repo, state = 'all') => {
         return `${this.url}/repos/${owner}/${repo}/pulls?state=${state}`;
       },
+
       commits: (owner, repo) => {
         return `${this.url}/repos/${owner}/${repo}/commits`;
       },
+
       issues: (org, filter = 'all', state = 'all') => {
         return `${this.url}/orgs/${org}/issues?filter=${filter}&state=${state}`;
       },
@@ -122,14 +125,18 @@ module.exports = class GithubClient {
   }
 
   async getOrgDetails(org) {
-    try {
-      const response = await this.requestorTemplate.get(
-        this.api.organisation(org)
-      );
-      return response.body;
-    } catch (e) {
-      return new Error(e);
-    }
+    const response = await this.requestorTemplate.get(
+      this.api.organisation(org)
+    );
+    return response.body;
+  }
+
+  async getRepo(org, repo) {
+    const response = await this.requestorTemplate.get(
+      this.api.repository(org, repo)
+    );
+
+    return response.body;
   }
 
   async getScopes() {
@@ -246,7 +253,19 @@ module.exports = class GithubClient {
   }
 
   async getCommits(org, repo) {
-    return await this.requestorTemplate.getAll(this.api.commits(org, repo));
+    try {
+      var result = await this.requestorTemplate.getAll(
+        this.api.commits(org, repo)
+      );
+
+      if (result && result.length) {
+        return result;
+      } else {
+        return [];
+      }
+    } catch (ex) {
+      return [];
+    }
   }
 
   async getIssues(org, repo = null) {
@@ -310,9 +329,19 @@ module.exports = class GithubClient {
   }
 
   async getCollaborators(org, repo) {
-    return await this.requestorTemplate.getAll(
-      this.api.collaborators(org, repo)
-    );
+    try {
+      var result = await this.requestorTemplate.getAll(
+        this.api.collaborators(org, repo)
+      );
+
+      if (result && result.length) {
+        return result;
+      } else {
+        return [];
+      }
+    } catch (ex) {
+      return [];
+    }
   }
 
   async getContributions(org, repo) {
