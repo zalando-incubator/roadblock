@@ -6,11 +6,11 @@ var app;
 
 async function init() {
   var args = process.argv.slice(2);
-  app = new Bootstrap(process.cwd(), __dirname, args);
+  app = new Bootstrap(process.cwd(), __dirname);
 
   if (app.localConfigExists()) {
     console.log('  ✅   roadblock.json found - starting roadblock...');
-    const config = app.config();
+    const config = app.config(args);
     const context = await app.getContext(config);
 
     return run(config, context);
@@ -39,9 +39,7 @@ async function run(config, context) {
     var orgs = await context.client.Organisation.model.findAll();
 
     console.log(
-      `  ℹ️   Running ${context.tasks.org.length} organisation tasks on ${
-        orgs.length
-      } imported github organisations`
+      `  ℹ️   Running ${context.tasks.org.length} organisation tasks on ${orgs.length} imported github organisations`
     );
 
     for (const org of orgs) {
@@ -61,9 +59,7 @@ async function run(config, context) {
 
     if (repositories.length > 0) {
       console.log(
-        `  ℹ️   Running ${context.tasks.repo.length} repository tasks on ${
-          repositories.length
-        } imported github repositories`
+        `  ℹ️   Running ${context.tasks.repo.length} repository tasks on ${repositories.length} imported github repositories`
       );
 
       const repoProgress = new cliProgress.Bar(
@@ -102,6 +98,15 @@ async function run(config, context) {
       `  ℹ️   Running ${context.tasks.post.length} post-processing tasks`
     );
     for (const task of context.tasks.post) {
+      await task(context, config);
+    }
+  }
+
+  if (context.tasks.metrics.length > 0) {
+    console.log(
+      `  ℹ️   Running ${context.tasks.metrics.length} metrics-processing tasks`
+    );
+    for (const task of context.tasks.metrics) {
       await task(context, config);
     }
   }

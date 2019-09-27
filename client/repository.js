@@ -29,7 +29,8 @@ module.exports = class Repository extends Base {
         defaultValue: 'internal'
       },
       fork: Sequelize.BOOLEAN,
-      archived: Sequelize.BOOLEAN
+      archived: Sequelize.BOOLEAN,
+      team_id: Sequelize.STRING
     };
 
     this.map = {
@@ -48,7 +49,8 @@ module.exports = class Repository extends Base {
       watchers_count: 'watchers',
 
       fork: 'fork',
-      archived: 'archived'
+      archived: 'archived',
+      team_id: 'team_id'
     };
 
     this.name = 'Repository';

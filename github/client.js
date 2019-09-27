@@ -49,9 +49,7 @@ module.exports = class GithubClient {
         return `${this.url}/repos/${owner}/${name}/hooks`;
       },
       branchProtection: (owner, name, branch = 'master') => {
-        return `${
-          this.url
-        }/repos/${owner}/${name}/branches/${branch}/protection`;
+        return `${this.url}/repos/${owner}/${name}/branches/${branch}/protection`;
       },
       externalCollaboratorsForOrg: org => {
         return `${this.url}/orgs/${org}/outside_collaborators`;
@@ -80,6 +78,10 @@ module.exports = class GithubClient {
 
       memberRepositories: member => {
         return `${this.url}/users/${member}/repos?type=owner`;
+      },
+
+      fileContents: (org, repo, path) => {
+        return `${this.url}/repos/${org}/${repo}/contents/${path}`;
       }
     };
 
@@ -134,6 +136,14 @@ module.exports = class GithubClient {
   async getRepo(org, repo) {
     const response = await this.requestorTemplate.get(
       this.api.repository(org, repo)
+    );
+
+    return response.body;
+  }
+
+  async getFileContents(org, repo, path) {
+    const response = await this.requestorTemplate.get(
+      this.api.fileContents(org, repo, path)
     );
 
     return response.body;

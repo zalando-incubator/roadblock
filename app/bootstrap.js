@@ -12,15 +12,14 @@ const ExportClient = require('../export/client.js');
 const configs = require('./config');
 
 module.exports = class Bootstrap {
-  constructor(localDir = null, roadblockDir = null, args = new Array(0)) {
-    if (!roadblockDir) roadblockDir = __dirname;
+  constructor(localDir = null, roadblockDir = null) {
+    if (!roadblockDir) roadblockDir = path.join(__dirname, '..');
 
     if (!localDir) localDir = process.cwd();
 
     this.localConfig = localDir + '/roadblock.json';
     this.localDir = localDir;
     this.roadblockDir = roadblockDir;
-    this.arguments = args;
     this.context = null;
   }
 
@@ -28,18 +27,18 @@ module.exports = class Bootstrap {
     return fs.existsSync(this.localConfig);
   }
 
-  config() {
+  config(args = []) {
     if (!this.localConfigExists()) throw 'Roadblock configuration not found';
 
     const localConfig = require(this.localConfig);
     const config = { ...configs.defaultConfig, ...localConfig };
 
-    for (const arg of this.arguments) {
+    for (const arg of args) {
       var keyval = arg.split('=');
       if (keyval.length > 1) {
         var val = keyval[1];
         if (val.indexOf('[') == 0 || val.indexOf('{') == 0) {
-          val = JSON.parse(val);
+          val = JSON.parse(val.replace(/'/g, '"'));
         }
         dottie.set(config, keyval[0], val);
       }
@@ -72,7 +71,10 @@ module.exports = class Bootstrap {
     );
     context.database = await new DatabaseClient(config.db).db();
 
-    var externalClients = this._getClients().map(x => require(x));
+    var externalClients = this._getClients().map(x => {
+      return { file: x, obj: require(x) };
+    });
+
     context.client = await Client(
       context.github,
       context.database,
@@ -96,7 +98,9 @@ module.exports = class Bootstrap {
     context.tasks.post = this._getTasks('post', config.tasks).map(x =>
       require(x)
     );
-
+    context.tasks.metrics = this._getTasks('metrics', config.tasks).map(x =>
+      require(x)
+    );
     return context;
   }
 

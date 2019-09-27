@@ -76,11 +76,11 @@ module.exports = async function(
 
   for (const client of externalTypes) {
     try {
-      var cl = new client(github, database);
-      s[client.name] = cl;
-      s[client.name].define();
+      var cl = new client.obj(github, database);
+      s[client.obj.name] = cl;
+      s[client.obj.name].define();
     } catch (ex) {
-      console.log(ex);
+      console.log(client.file + ' - ' + ex);
     }
   }
 
@@ -104,7 +104,7 @@ module.exports = async function(
 
   for (const client of externalTypes) {
     try {
-      s[client.name].sync(reset);
+      s[client.obj.name].sync(reset);
     } catch (ex) {}
   }
 
